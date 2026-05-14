@@ -1,0 +1,3 @@
+[
+  { "collection": "order", "keys": { "status": 1 }, "name": "idx_order_status" }
+]

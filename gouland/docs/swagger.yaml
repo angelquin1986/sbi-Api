@@ -1,0 +1,91 @@
+openapi: 3.0.0
+info:
+  title: Gouland SBI API (migrated)
+  version: 1.0.0
+paths:
+  /country:
+    get:
+      summary: List countries
+      responses:
+        '200':
+          description: OK
+  /pax:
+    get:
+      summary: List passengers
+      responses:
+        '200':
+          description: OK
+  /order:
+    get:
+      summary: List orders
+      responses:
+        '200':
+          description: OK
+  /login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        '200':
+          description: OK
+  /upload:
+    post:
+      summary: Upload file
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                temporales:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    Country:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+    Passenger:
+      type: object
+      properties:
+        id:
+          type: string
+        pax_first_name:
+          type: string
+        pax_last_name:
+          type: string
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        contact_person_name:
+          type: string
+    Seller:
+      type: object
+      properties:
+        id:
+          type: string
+        mailseller:
+          type: string
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
