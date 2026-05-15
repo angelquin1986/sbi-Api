@@ -1,0 +1,39 @@
+<mat-sidenav-container class="sidenav-container">
+  <div class="wrapper">
+    <div class="sidebar" data-color="azure" data-background-color="white" data-image="./assets/img/sidebar-1.jpg">
+      <app-sidebar></app-sidebar>
+      <!-- <div class="sidebar-background" style="background-image: url(./assets/img/sidebar-4.jpg)"></div> -->
+    </div>
+      <div class="main-panel" style="padding: 30px;">
+        <h1 style="text-align: center;"><strong>GENERAL INFORMATION</strong></h1>
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <mat-spinner *ngIf="this.status==false" class="custom-spinner" style="margin-top: 40px;"></mat-spinner>
+          <mat-card class="card-graphic center" style="margin-left: 20px; margin-right: 20px; margin-top: 40px;"
+            *ngIf="this.status==true">
+            <mat-card-header>
+            </mat-card-header>
+            <mat-card-content>
+              <app-graphic-constructor #1 [idsAgente]="idsAgente" [estructura]="estructurames" type="column3d">
+              </app-graphic-constructor>
+            </mat-card-content>
+          </mat-card>
+          <mat-card class="card-graphic center" style="margin-left: 20px; margin-right: 20px; margin-top: 40px;"
+            *ngIf="this.status==true">
+            <mat-card-header>
+            </mat-card-header>
+            <mat-card-content>
+              <app-graphic-constructor #2 [idsAgente]="idsAgente" [estructura]="estructurafecha" type="pie3d">
+              </app-graphic-constructor>
+            </mat-card-content>
+          </mat-card>
+        </div>
+        <app-footer-dashboard></app-footer-dashboard>
+      </div>
+  </div>
+</mat-sidenav-container>
+<!-- 
+style="margin-left: 20px; margin-right: 20px; margin-top: 40px; display: flex;
+        justify-content: center;
+        align-items: center; -->
+
+<!-- style="margin-left: 20px; margin-right: 20px; margin-top: 40px;" -->

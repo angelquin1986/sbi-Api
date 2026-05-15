@@ -1,0 +1,23 @@
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #sidenav mode="push">
+    <button mat-button class="button-nav" (click)="activar(1)">Home</button>
+    <button mat-button class="button-nav" (click)="activar(2)">Pedidos</button>
+    <button mat-button class="button-nav" *ngIf="rolAgente === 'OPERACION_ROLE'" (click)="activar(3)">Estadisticas</button>
+    <br>
+    <button mat-button class="button-nav" (click)="cerrarSesion()">Logout</button>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <div class="basic-container">
+      <button mat-button id="button-sidenav" (click)="sidenav.toggle()" class="button-sidenav">
+        <mat-icon class="material-icons md-36">vertical_split</mat-icon>
+      </button>
+      <app-graphic-report [ubicacion]="activo" [rolAgente]="rolAgente" [sellerCompany]="sellerCompany" *ngIf="activo === 'home'"></app-graphic-report>
+      <app-dashboard *ngIf="activo === 'dashboard'"></app-dashboard>
+      <!-- <app-graphic-report [ubicacion]="activo" [rolAgente]="rolAgente" [sellerCompany]="sellerCompany" *ngIf="activo === 'estadisticas'"></app-graphic-report> -->
+    </div>
+
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+

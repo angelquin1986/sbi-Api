@@ -6,15 +6,14 @@ import (
 
 	"gouland/internal/domain"
 	"gouland/internal/usecase"
-	"gouland/internal/auth"
 
 	"github.com/gin-gonic/gin"
 )
 
 // Login payload
 type LoginPayload struct {
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func LoginHandler(u usecase.SellerUsecase) gin.HandlerFunc {
@@ -24,13 +23,11 @@ func LoginHandler(u usecase.SellerUsecase) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		ctx := context.Background()
-		tok, s, err := u.Authenticate(ctx, p.Email, p.Password)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"token": tok, "user": s})
+		c.JSON(http.StatusOK, gin.H{
+			"ok":      true,
+			"mensaje": "Login post realizada correctamente...",
+			"body":    p,
+		})
 	}
 }
 

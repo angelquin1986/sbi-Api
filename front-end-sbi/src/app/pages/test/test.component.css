@@ -1,0 +1,7 @@
+input.ng-pristine {
+  background-color:yellow;
+}
+
+input.ng-touched.ng-invalid {
+  background-color:red;
+}

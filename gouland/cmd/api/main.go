@@ -18,11 +18,6 @@ func main() {
 	}
 	defer mongoAdapter.Disconnect()
 
-	// Apply migrations (if any)
-	if err := migrations.ApplyMigrations(cfg.MongodbURI, "./gouland/migrations"); err != nil {
-		log.Printf("migrations warning: %v", err)
-	}
-
 	// Start HTTP server
 	handler := httpadapter.NewRouter(mongoAdapter)
 	if err := handler.Run(":" + cfg.Port); err != nil {

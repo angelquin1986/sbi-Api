@@ -1,0 +1,120 @@
+.sidenav-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.button-nav {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.button-sidenav{
+  height: auto;
+}
+
+
+.material-icons.md-36 {
+  font-size: 36px;
+  margin-top: -10px;
+}
+
+.mat-form-field.text {
+  font-size: 14px;
+  width: 35%;
+}
+
+.mat-form-field.texttm {
+  font-size: 14px;
+  width: 30%;
+}
+
+.prueba1 ::ng-deep {
+  background: #283643;
+}
+
+
+.mat-table {
+  width: 100%;
+}
+
+th {
+  font-weight: bold;
+}
+
+
+/* Usuario */
+.alinear-derecha {
+  float: right;
+  padding: 0px 0px;
+
+}
+
+.contiene {
+  overflow: auto;
+}
+
+.example-custom-date-class {
+  background: #283643;
+  border-radius: 100%;
+}
+
+
+
+ :host ::ng-deep .custom-spinner circle{   
+  stroke: #233c49;
+}
+
+
+/* mat-icon-stepper selected color change  */
+::ng-deep .mat-step-header .mat-step-icon-selected, .mat-step-header .mat-step-icon-state-done, .mat-step-header .mat-step-icon-state-edit {
+    background-color: #233c49 !important;
+}
+
+/* input outline color */
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
+    color: #233c49 !important;
+}
+
+/* mat-input focused color */
+::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+    color: #233c49 !important;
+}
+
+/* mat-input error outline color */
+::ng-deep .mat-form-field-appearance-outline.mat-form-field-invalid.mat-form-field-invalid .mat-form-field-outline-thick{
+    color: #233c49 !important;
+}
+
+/* mat-input carent color */
+::ng-deep .mat-input-element {
+    caret-color: #233c49 !important;
+}
+
+/* mat-input error carent color */
+::ng-deep .mat-form-field-invalid .mat-input-element, .mat-warn .mat-input-element {
+    caret-color: #233c49 !important;
+}
+
+/* mat-label normal state style */
+::ng-deep .mat-form-field-label {
+    color: #233c49 !important;
+}
+
+/* mat-label focused style */
+::ng-deep .mat-form-field.mat-focused .mat-form-field-label {
+    color: #233c49 !important;
+}
+
+/* mat-label error style */
+::ng-deep .mat-form-field.mat-form-field-invalid .mat-form-field-label {
+    color: #233c49 !important;
+}
+
+@media only screen and (max-width: 810px) {
+  .mat-elevation-z8 .contiene {
+    overflow: auto;
+  }
+}

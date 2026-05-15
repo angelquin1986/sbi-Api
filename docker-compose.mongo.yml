@@ -1,0 +1,49 @@
+version: "3.8"
+
+# docker-compose -f docker-compose.mongo.yml up -d
+# Levanta SOLO MongoDB en el puerto 27017 con volumen persistente.
+# Úsalo cuando quieras correr el backend Go directamente en tu máquina (go run ./cmd/api)
+# y solo necesitas la base de datos en Docker.
+#
+# ⚠️  El script db_test/init/01-import.sh se ejecuta SOLO la primera vez
+#     (cuando el volumen sbi-mongo-data está vacío). Para reimportar:
+#       docker compose -f docker-compose.mongo.yml down -v
+#       docker compose -f docker-compose.mongo.yml up -d
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: sbi-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: bookingDB
+    volumes:
+      - sbi-mongo-data:/data/db
+      - ./db_test/bookings:/docker-entrypoint-initdb.d/bookings:ro
+      - ./db_test/init/01-import.sh:/docker-entrypoint-initdb.d/01-import.sh:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo-express:
+    image: mongo-express:1.0.2-20
+    container_name: sbi-mongo-ui
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin123
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  sbi-mongo-data:
+    name: sbi-mongo-data

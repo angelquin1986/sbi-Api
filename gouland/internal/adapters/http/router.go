@@ -1,100 +1,136 @@
 package httpadapter
 
 import (
-	"gouland/internal/adapters/mongo"
-	"gouland/internal/adapters/http/handlers"
-	"gouland/internal/usecase"
-	"github.com/gin-gonic/gin"
+"gouland/internal/adapters/http/handlers"
+mongoadapter "gouland/internal/adapters/mongo"
+"gouland/internal/usecase"
+
+"github.com/gin-gonic/gin"
 )
 
+// setCORSHeaders sets CORS on any ResponseWriter — used both in middleware and NoRoute/NoMethod handlers
+func setCORSHeaders(w gin.ResponseWriter) {
+w.Header().Set("Access-Control-Allow-Origin", "*")
+w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD")
+w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, token")
+w.Header().Set("Access-Control-Max-Age", "0")
+}
+
 func NewRouter(db *mongoadapter.Mongo) *gin.Engine {
-	r := gin.Default()
+r := gin.Default()
+r.HandleMethodNotAllowed = true
 
-	// CORS middleware similar to original project
-	r.Use(func(c *gin.Context) {
-		allowed := map[string]bool{
-			"https://experiencesouthamerica.travel": true,
-			"https://www.experiencesouthamerica.travel": true,
-		}
-		origin := c.GetHeader("Origin")
-		if allowed[origin] {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-		}
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(200)
-			return
-		}
-		c.Next()
-	})
+// CORS middleware — runs for all registered routes
+r.Use(func(c *gin.Context) {
+setCORSHeaders(c.Writer)
+if c.Request.Method == "OPTIONS" {
+	c.AbortWithStatus(204)
+	return
+}
+c.Next()
+})
 
-	// Health
-	r.GET("/", func(c *gin.Context){ c.JSON(200, gin.H{"status":"ok","service":"gouland api"}) })
+// NoRoute (404) — also needs CORS so browser doesn't block the response
+r.NoRoute(func(c *gin.Context) {
+setCORSHeaders(c.Writer)
+c.JSON(404, gin.H{"error": "not found"})
+})
 
-	// Instantiate repos and handlers
-	countryRepo := mongoadapter.NewCountryRepo(db)
-	countryHandler := handlers.NewCountryHandler(countryRepo)
+// NoMethod (405) — HEAD on a GET-only route hits here; return 200 empty for HEAD
+r.NoMethod(func(c *gin.Context) {
+setCORSHeaders(c.Writer)
+if c.Request.Method == "HEAD" {
+	c.Status(200)
+	return
+}
+c.JSON(405, gin.H{"error": "method not allowed"})
+})
 
-	passengerRepo := mongoadapter.NewPassengerRepo(db)
-	passengerHandler := handlers.NewPassengerHandler(passengerRepo)
+// Health / root
+r.GET("/", func(c *gin.Context) {
+c.JSON(200, gin.H{
+"ok":      true,
+"mensaje": "Peticion realizada correctamente...al servidor backend SBI de Experience Southamerica...!!",
+})
+})
 
-	orderRepo := mongoadapter.NewOrderRepo(db)
-	orderHandler := handlers.NewOrderHandler(orderRepo)
+// Repos
+countryRepo := mongoadapter.NewCountryRepo(db)
+passengerRepo := mongoadapter.NewPassengerRepo(db)
+orderRepo := mongoadapter.NewOrderRepo(db)
+contactRepo := mongoadapter.NewContactRepo(db)
+sellerRepo := mongoadapter.NewSellerRepo(db)
+fileRepo := mongoadapter.NewFileRepo(db)
 
-	contactRepo := mongoadapter.NewContactRepo(db)
-	contactHandler := handlers.NewContactHandler(contactRepo)
+// Usecases
+countryUC := usecase.NewCountryUsecase(countryRepo)
+passengerUC := usecase.NewPassengerUsecase(passengerRepo)
+orderUC := usecase.NewOrderUsecase(orderRepo)
+sellerUC := usecase.NewSellerUsecase(sellerRepo)
+contactUC := usecase.NewContactUsecase(contactRepo)
+fileUC := usecase.NewFileUsecase(fileRepo)
+searchUC := usecase.NewSearchUsecase(orderRepo, passengerRepo, countryRepo)
 
-	// auth handlers (use SellerRepo)
-	sellerRepo := mongoadapter.NewSellerRepo(db)
-	// create usecases
-	sellerUC := usecase.NewSellerUsecase(sellerRepo)
-	countryUC := usecase.NewCountryUsecase(countryRepo)
-	passengerUC := usecase.NewPassengerUsecase(passengerRepo)
-	orderUC := usecase.NewOrderUsecase(orderRepo)
-	searchUC := usecase.NewSearchUsecase(orderRepo, passengerRepo, countryRepo)
+// Handlers
+countryHandler := handlers.NewCountryHandler(countryUC)
+passengerHandler := handlers.NewPassengerHandler(passengerUC, orderUC)
+orderHandler := handlers.NewOrderHandler(orderUC)
+contactHandler := handlers.NewContactHandler(contactUC)
 
-	loginHandler := handlers.LoginHandler(sellerUC)
-	registerHandler := handlers.RegisterHandler(sellerUC)
+// /login
+r.POST("/login", handlers.LoginHandler(sellerUC))
 
-	// handlers that need usecases
-	countryHandler = handlers.NewCountryHandler(countryUC)
-	passengerHandler = handlers.NewPassengerHandler(passengerUC)
-	orderHandler = handlers.NewOrderHandler(orderUC)
+// /country CRUD
+countryGroup := r.Group("/country")
+countryHandler.Register(countryGroup)
 
-	api := r.Group("")
-	countryGroup := api.Group("/country")
-	countryHandler.Register(countryGroup)
+// /pax — GET /, GET /findpax/:id, GET /:idorder, POST /, PUT /:id
+paxGroup := r.Group("/pax")
+passengerHandler.Register(paxGroup)
 
-	passengerGroup := api.Group("/pax")
-	passengerHandler.Register(passengerGroup)
+// /order CRUD
+orderGroup := r.Group("/order")
+orderHandler.Register(orderGroup)
 
-	orderGroup := api.Group("/order")
-	orderHandler.Register(orderGroup)
+// /contactos GET
+contactGroup := r.Group("/contactos")
+contactHandler.Register(contactGroup)
 
-	contactGroup := api.Group("/contactos")
-	contactHandler.Register(contactGroup)
+// /usuario — múltiples GET + CRUD (rutas específicas antes de /:id)
+usuarioGroup := r.Group("/usuario")
+usuarioGroup.GET("", handlers.UsuarioListHandler(sellerUC))
+usuarioGroup.GET("/", handlers.UsuarioListHandler(sellerUC))
+usuarioGroup.GET("/vendedor", handlers.UsuarioVendedorHandler(sellerUC))
+usuarioGroup.GET("/seller/:id", handlers.UsuarioGetBySellerIDHandler(sellerUC))
+usuarioGroup.GET("/user/:nombre", handlers.UsuarioGetByNUserHandler(sellerUC))
+usuarioGroup.GET("/company/:nombre", handlers.UsuarioGetByCompanyHandler(sellerUC))
+usuarioGroup.GET("/:id", handlers.UsuarioGetHandler(sellerUC))
+usuarioGroup.POST("", handlers.UsuarioCreateHandler(sellerUC))
+usuarioGroup.POST("/", handlers.UsuarioCreateHandler(sellerUC))
+usuarioGroup.PUT("/:id", handlers.UsuarioUpdateHandler(sellerUC))
+usuarioGroup.DELETE("/:id", handlers.UsuarioDeleteHandler(sellerUC))
 
-	// auth
-	api.POST("/login", loginHandler)
-	api.POST("/register", registerHandler)
+// /busqueda — 6 endpoints específicos + búsqueda genérica
+busquedaGroup := r.Group("/busqueda")
+busquedaGroup.GET("/pedido/:idcab", handlers.BusquedaPedidoHandler(searchUC))
+busquedaGroup.GET("/coleccion/:tabla/:idcab", handlers.BusquedaColeccionHandler(searchUC))
+busquedaGroup.GET("/orders/:roleAgente/:idAgente/:fini/:ffin/:nameContact/:tm", handlers.BusquedaOrdersHandler(searchUC))
+busquedaGroup.GET("/mes/:idAgente", handlers.BusquedaMesHandler(searchUC))
+busquedaGroup.GET("/cuentaTM/:idAgente", handlers.BusquedaCuentaTMHandler(searchUC))
+busquedaGroup.GET("/cuentaTMs", handlers.BusquedaCuentaTMsHandler(searchUC))
 
-	// upload and archivo
-	api.POST("/upload", handlers.UploadHandler)
-	archivoGroup := api.Group("/archivo")
-	archivoGroup.GET("/", handlers.ArchivoListHandler)
-	archivoGroup.GET("/:name", handlers.ArchivoDownloadHandler)
+// /upload
+r.GET("/upload", handlers.UploadGetHandler)
+r.POST("/upload", handlers.UploadHandler)
 
-	// busqueda and usuario
-	api.GET("/busqueda", handlers.BusquedaHandler(searchUC))
+// /archivo — file físico + CRUD MongoDB (rutas específicas antes de /:idorder)
+archivoGroup := r.Group("/archivo")
+archivoGroup.GET("/file/:carpeta/:archivo", handlers.ArchivoFileHandler)
+archivoGroup.GET("/delete/:archivo", handlers.ArchivoDeleteFisico)
+archivoGroup.GET("/:idorder", handlers.ArchivoListByOrderHandler(fileUC))
+archivoGroup.POST("/", handlers.ArchivoCreateHandler(fileUC))
+archivoGroup.PUT("/:id", handlers.ArchivoUpdateHandler(fileUC))
+archivoGroup.DELETE("/:idArchivo", handlers.ArchivoDeleteHandler(fileUC))
 
-	usuarioGroup := api.Group("/usuario")
-	usuarioGroup.GET("/", handlers.UsuarioListHandler(sellerUC))
-	usuarioGroup.GET("/:id", handlers.UsuarioGetHandler(sellerUC))
-	usuarioGroup.POST("/", handlers.UsuarioCreateHandler(sellerUC))
-	usuarioGroup.PUT("/:id", handlers.UsuarioUpdateHandler(sellerUC))
-	usuarioGroup.DELETE("/:id", handlers.UsuarioDeleteHandler(sellerUC))
-
-	return r
+return r
 }

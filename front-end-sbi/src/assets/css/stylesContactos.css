@@ -1,0 +1,32 @@
+
+.mat-form-field {
+  font-size: 14px;
+  width: 100%;
+}
+
+.contiene {
+  overflow: auto;
+}
+
+th {
+  font-weight: bold;
+}
+
+td.mat-cell {
+  padding: 5px;
+}
+
+::ng-deep.mat-form-field-underline {
+  /*change color of underline*/
+  background-color: azure !important;
+} 
+
+::ng-deep.mat-form-field-ripple {
+ /*change color of underline when focused*/
+ background-color: azure !important;;
+}
+::ng-deep .mat-focused .mat-form-field-label {
+  /*change color of label*/
+  color: azure !important;
+ }
+

@@ -1,0 +1,48 @@
+{
+  "/country": {
+    "target": "http://api:4000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/pax": {
+    "target": "http://api:4000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/order": {
+    "target": "http://api:4000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/usuario": {
+    "target": "http://api:4000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/busqueda": {
+    "target": "http://api:4000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/contactos": {
+    "target": "http://api:4000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/archivo": {
+    "target": "http://api:4000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/upload": {
+    "target": "http://api:4000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/login": {
+    "target": "http://api:4000",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

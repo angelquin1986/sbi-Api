@@ -1,0 +1,75 @@
+/* You can add global styles to this file, and also import other style files */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+body {
+  margin: 0px;
+  font-family: 'Lato', sans-serif;
+  font-size: 16px;
+}
+
+.basic-container {
+  padding: 30px;
+}
+
+.example-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.example-container > * {
+  width: 100%;
+}
+
+.example-container form {
+  margin-bottom: 20px;
+}
+
+.example-container form > * {
+  margin: 5px 0;
+}
+
+.example-container .mat-radio-button {
+  margin: 0 5px;
+}
+
+.example-card {
+  margin: 80px auto;
+  max-width: 500px;
+}
+
+.example-form {
+  min-width: 150px;
+  max-width: 400px;
+  width: 100%;
+}
+
+.example-full-width {
+  width: 100%;
+}
+
+
+/* Style para Arrastrar img */
+.drop-zone {
+  border: dotted 3px lightgray;
+  opacity: 0.5;
+  color: #666;
+  text-align: center
+}
+
+.file-over {
+  border: dotted 3px dodgerblue;
+}
+
+.text-green {
+  color: green
+}
+
+html, body { 
+  height: 100%;
+}
+
+body { margin: 0;
+  font-family: 'Roboto',
+  sans-serif;
+  background: #EEEEEE;
+}

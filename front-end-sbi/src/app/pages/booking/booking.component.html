@@ -1,0 +1,695 @@
+<div class="container" style="background: white;">
+    <app-header-register-edit [muestra]="true"> </app-header-register-edit>
+    <p>To complete your booking process with <strong style="font-weight: bold;"> {{nombreCompania}} </strong>(<u><a
+                href="{{urlCompania}}" style="font-weight: bold;">{{sitioCompania}}</a></u>) please provide the
+        following information per traveler. We use
+        <strong><u><a (click)="mostrarSegurityInfo()">https</a></u></strong> and an encrypted system to protect your
+        information. All information must be as it appears in passenger's passport.
+    </p>
+    <p *ngIf="order.tm_date_cruise"> This form has a limited time availability so please send it before <b><span
+                id="expFecha">{{ order.tm_date_cruise }}</span></b></p>
+    <small style="font-weight: bold;"><em>Please complete the following form.</em></small>
+    <form #formaRegistro="ngForm" name="myForm" (ngSubmit)="registroForma(formaRegistro)"
+        onsubmit="return validaForm( this )">
+        <!--onsubmit="return validaForm( this )"-->
+        <div id="contact-errors" class="pink-errors">
+            <span id="error-cname"></span>
+            <span id="error-cmail"></span>
+            <span id="error-agent"></span>
+            <span id="erros-paxs"></span>
+        </div>
+        <div class="pax">
+            <h2></h2>
+            <div class="cells">
+                <table>
+                    <tr>
+                        <td style="font-family: Lato,sans-serif; font-size: 16px;">Contact Person Name: <strong
+                                style="font-weight: bold;">(*)</strong></td>
+                        <td>
+                            <input type="text" name="contact_person_name" id="contact_person_name"
+                                #contact_person_name="ngModel" [(ngModel)]="order.contact_person_name"
+                                style="height: 40px; width: 100%">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="cells">
+                <table>
+                    <tr>
+                        <td style="font-family: Lato,sans-serif; font-size: 16px;">Contact Person Email: <strong
+                                style="font-weight: bold;">(*)</strong></td>
+                        <td>
+                            <input type="text" name="contact_person_mail" id="contact_person_mail"
+                                #contact_person_mail="ngModel" [(ngModel)]="order.contact_person_mail"
+                                style="height: 40px; width: 100%">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="cells">
+                <table>
+                    <tr>
+                        <td style="font-family: Lato,sans-serif; font-size: 16px;">Sales Agent: <strong
+                                style="font-weight: bold;">(*)</strong></td>
+                        <td>
+                            <input style="background: #ddd" type="text" *ngIf="!mostrarAgentes"
+                                name="contact_person_name_agent" id="contact_person_name_agent"
+                                #contact_person_name_agent="ngModel" [(ngModel)]="nameUser" disabled="true"
+                                style="height: 40px; width: 100%">
+                            <select name="sales_agent_id" id="sales_agent_id" #sales_agent_id="ngModel"
+                                [(ngModel)]="order.sales_agent_id" [hidden]="!mostrarAgentes">
+                                <option *ngIf="mostrarAgentes" value="0" selected="selected">Please select</option>
+                                <option *ngFor="let seller of sellers " [value]="seller.id"
+                                    [attr.selected]="!mostrarAgentes ? true : null">{{ seller.nseller}}</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="cells">
+                <table>
+                    <tr>
+                        <td style="font-family: Lato,sans-serif; font-size: 16px;">Number of Passengers: <strong
+                                style="font-weight: bold;">(*)</strong></td>
+                        <td for="numberPax">
+                            <!--<input formControlName="numberPax" type="text" name="numberPax" required (keypress)="validarNumeros($event)" maxlength="2">-->
+                            <!-- <label for="numberPax"> -->
+                            <select id="number_pax" name="number_pax" [(ngModel)]="order.number_pax"
+                                (ngModelChange)="onChange($event)">
+                                <option value="0" selected="selected">Please select</option>
+                                <option *ngFor="let pax of arrayPaxs" value="{{ pax }}">{{ pax }}</option>
+                            </select>
+                            <!-- </label> -->
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div id="billing-errors" class="pink-errors"><span id="error-country"></span><span id="error-phone"></span><span
+                id="error-address"></span><span id="error-moreaddress"></span></div>
+        <div class="pax">
+            <h2>Address</h2>
+            <div class="cells">
+                <table>
+                    <tr>
+                        <td style="font-family: Lato,sans-serif; font-size: 16px;">Country: <strong
+                                style="font-weight: bold;">(*)</strong></td>
+                        <td>
+                            <select id="billing_country" name="billing_country" [(ngModel)]="order.billing_country">
+                                <option value="0" selected="selected">Please select</option>
+                                <option *ngFor="let pais of listCountries " [value]="pais.Code">{{ pais.Name }}</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="cells">
+                <table>
+                    <tr>
+                        <td style="font-family: Lato,sans-serif; font-size: 16px;">Telephone number: <strong
+                                style="font-weight: bold;">(*)</strong></td>
+                        <td>
+                            <input type="text" name="billing_phone" id="billing_phone" #billing_phone="ngModel"
+                                [(ngModel)]="order.billing_phone" required maxlength="15"
+                                (keypress)="validarNumeros($event)" style="height: 40px; width: 100%">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="cells">
+                <table>
+                    <tr>
+                        <td style="font-family: Lato,sans-serif; font-size: 16px;">Street address: <strong
+                                style="font-weight: bold;">(*)</strong></td>
+                        <td>
+                            <input type="text" name="billing_address" id="billing_address" #billing_address="ngModel"
+                                [(ngModel)]="order.billing_address" style="height: 40px; width: 100%">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="cells">
+                <table>
+                    <tr>
+                        <td style="font-family: Lato,sans-serif; font-size: 16px;">City, State, Zip code: <strong
+                                style="font-weight: bold;">(*)</strong></td>
+                        <td>
+                            <input type="text" name="billing_city" id="billing_city" #billing_city="ngModel"
+                                [(ngModel)]="order.billing_city" style="height: 40px; width: 100%">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <small style="font-weight: bold;"><em>Mandatory fields (*):</em></small>
+        <hr>
+        <div *ngFor="let element of listadoPasajeros; let e = index">
+            <div id="pax-errors-{{ e }}" class="pink-errors">
+                <span id="error-title-{{ e }}"></span>
+                <span id="error-fname-{{ e }}"></span>
+                <span id="error-lname{{ e }}"></span>
+                <span id="error-natio-{{ e }}"></span>
+                <span id="error-byear-{{ e }}"></span>
+                <span id="error-bmonth-{{ e }}"></span>
+                <span id="error-bday-{{ e }}"></span>
+                <span id="error-pass-{{ e }}"></span>
+                <span id="error-pyear-{{ e }}"></span>
+                <span id="error-pmonth-{{ e }}"></span>
+                <span id="error-pday-{{ e }}"></span>
+                <span id="error-emergency-{{ e }}"></span>
+                <span id="error-blood-{{ e }}"></span>
+                <span id="error-marital-{{ e }}"></span>
+                <!--span id="error-insucia-{{ e }}"></span>
+        <span id="error-insunro-{{ e }}"></span-->
+                <span id="error-arrivaldate-{{ e }}"></span>
+                <span id="error-arrivalflight-{{ e }}"></span>
+                <span id="error-departureldate-{{ e }}"></span>
+                <span id="error-departureflight-{{ e }}"></span>
+                <span id="error-restrictions-{{ e }}"></span>
+            </div>
+            <div class="pax">
+                <h2 *ngIf="element.pax_first_name || element.pax_last_name">{{element.pax_first_name}}
+                    {{element.pax_last_name}}</h2>
+                <h2 *ngIf="!element.pax_first_name && !element.pax_last_name">Passenger {{ e+1 }}</h2>
+                <div class="cells">
+                    <table>
+                        <tr>
+                            <td style="font-family: Lato,sans-serif; font-size: 16px;">First Name: <strong
+                                    style="font-weight: bold;">(*)</strong></td>
+                            <td>
+                                <select name="pax_title_{{ e }}" id="pax_title_{{ e }}" #pax_title="ngModel"
+                                    [(ngModel)]="element.pax_title" required>
+                                    <option selected value="0">Title</option>
+                                    <option value="Mr.">Mr.</option>
+                                    <option value="Mrs.">Mrs.</option>
+                                    <option value="Ms.">Ms.</option>
+                                    <option value="Chd.">Chd.</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" name="pax_first_name_{{ e }}" id="pax_first_name_{{ e }}"
+                                    #pax_first_name="ngModel" [(ngModel)]="element.pax_first_name" required
+                                    style="height: 40px; width: 100%">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tr>
+                            <td style="font-family: Lato,sans-serif; font-size: 16px;">Last Name: <strong
+                                    style="font-weight: bold;">(*)</strong></td>
+                            <td>
+                                <input type="text" name="pax_last_name_{{ e }}" id="pax_last_name_{{ e }}"
+                                    #pax_last_name="ngModel" [(ngModel)]="element.pax_last_name" required
+                                    style="height: 40px; width: 100%">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tr>
+                            <td style="font-family: Lato,sans-serif; font-size: 16px;">Nationality: <strong
+                                    style="font-weight: bold;">(*)</strong></td>
+                            <td>
+                                <select id="pax_nationality_{{ e }}" name="pax_nationality_{{ e }}"
+                                    [(ngModel)]="element.pax_nationality" required>
+                                    <option value="0" selected="selected" disabled>Please select</option>
+                                    <option *ngFor="let paisnac of listCountries " [value]="paisnac.Code">{{
+                                        paisnac.Name }}</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="DE">Germany</option>
+                                    <option value="GB">United Kingdom</option>
+                                    <option value="US">United States</option>
+
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tr>
+                            <td style="font-family: Lato,sans-serif; font-size: 16px;">Date of Birth: <strong
+                                    style="font-weight: bold;">(*)</strong></td>
+                            <td><span class="traveler-data">
+                                    <select id="pax_date_month_{{ e }}" name="pax_date_month_{{ e }}"
+                                        style="min-width:70px" [(ngModel)]="element.pax_date_month" required>
+                                        <option selected="selected" value="0" disabled>Month</option>
+                                        <option>Jan</option>
+                                        <option>Feb</option>
+                                        <option>Mar</option>
+                                        <option>Apr</option>
+                                        <option>May</option>
+                                        <option>Jun</option>
+                                        <option>Jul</option>
+                                        <option>Aug</option>
+                                        <option>Sep</option>
+                                        <option>Oct</option>
+                                        <option>Nov</option>
+                                        <option>Dec</option>
+                                    </select>
+                                </span></td>
+                            <td><span class="traveler-data">
+                                    <select id="pax_date_day_{{ e }}" name="pax_date_day_{{ e }}" style="min-width:55px"
+                                        [(ngModel)]="element.pax_date_day" required>
+                                        <option selected="selected" value="0" disabled>Day</option>
+                                        <option>01</option>
+                                        <option>02</option>
+                                        <option>03</option>
+                                        <option>04</option>
+                                        <option>05</option>
+                                        <option>06</option>
+                                        <option>07</option>
+                                        <option>08</option>
+                                        <option>09</option>
+                                        <option>10</option>
+                                        <option>11</option>
+                                        <option>12</option>
+                                        <option>13</option>
+                                        <option>14</option>
+                                        <option>15</option>
+                                        <option>16</option>
+                                        <option>17</option>
+                                        <option>18</option>
+                                        <option>19</option>
+                                        <option>20</option>
+                                        <option>21</option>
+                                        <option>22</option>
+                                        <option>23</option>
+                                        <option>24</option>
+                                        <option>25</option>
+                                        <option>26</option>
+                                        <option>27</option>
+                                        <option>28</option>
+                                        <option>29</option>
+                                        <option>30</option>
+                                        <option>31</option>
+                                    </select>
+                                </span></td>
+                            <td><span class="traveler-data">
+                                    <select id="pax_date_year_{{ e }}" name="pax_date_year_{{ e }}"
+                                        style="min-width:60px" [(ngModel)]="element.pax_date_year" required>
+                                        <option selected="selected" value="0" disabled>Year</option>
+                                        <option *ngFor="let an of arraySelectNacimiento" value="{{an}}">{{an}}</option>
+
+                                    </select>
+                                </span></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tr>
+                            <td style="font-family: Lato,sans-serif; font-size: 16px;">Passport number: <strong
+                                    style="font-weight: bold;">(*)</strong>
+                                <a (click)="mostrarPassportInfo()" class="whatsthis">*</a>
+                            </td>
+                            <td><input type="text" name="pax_passport_{{ e }}" id="pax_passport_{{ e }}"
+                                    #pax_passport="ngModel" [(ngModel)]="element.pax_passport" required
+                                    style="height: 40px; width: 100%"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tr>
+                            <td style="font-family: Lato,sans-serif; font-size: 16px;">Passport expiration date: <strong
+                                    style="font-weight: bold;">(*)</strong>
+                                <a (click)="mostrarPassportInfo()" class="whatsthis">*</a>
+                            </td>
+                            <td><span class="traveler-data">
+                                    <select id="pax_passport_exp_month_{{ e }}" name="pax_passport_exp_month_{{ e }}"
+                                        style="min-width:70px" [(ngModel)]="element.pax_passport_exp_month" required>
+                                        <option selected="selected" value="0" disabled>Month</option>
+                                        <option>Jan</option>
+                                        <option>Feb</option>
+                                        <option>Mar</option>
+                                        <option>Apr</option>
+                                        <option>May</option>
+                                        <option>Jun</option>
+                                        <option>Jul</option>
+                                        <option>Aug</option>
+                                        <option>Sep</option>
+                                        <option>Oct</option>
+                                        <option>Nov</option>
+                                        <option>Dec</option>
+                                    </select>
+                                </span></td>
+                            <td><span class="traveler-data">
+                                    <select id="pax_passport_exp_day_{{ e }}" name="pax_passport_exp_day_{{ e }}"
+                                        style="min-width:55px" [(ngModel)]="element.pax_passport_exp_day" required>
+                                        <option selected="selected" value="0" disabled>Day</option>
+                                        <option>01</option>
+                                        <option>02</option>
+                                        <option>03</option>
+                                        <option>04</option>
+                                        <option>05</option>
+                                        <option>06</option>
+                                        <option>07</option>
+                                        <option>08</option>
+                                        <option>09</option>
+                                        <option>10</option>
+                                        <option>11</option>
+                                        <option>12</option>
+                                        <option>13</option>
+                                        <option>14</option>
+                                        <option>15</option>
+                                        <option>16</option>
+                                        <option>17</option>
+                                        <option>18</option>
+                                        <option>19</option>
+                                        <option>20</option>
+                                        <option>21</option>
+                                        <option>22</option>
+                                        <option>23</option>
+                                        <option>24</option>
+                                        <option>25</option>
+                                        <option>26</option>
+                                        <option>27</option>
+                                        <option>28</option>
+                                        <option>29</option>
+                                        <option>30</option>
+                                        <option>31</option>
+                                    </select>
+                                </span></td>
+                            <td><span class="traveler-data">
+                                    <select id="pax_passport_exp_year_{{ e }}" name="pax_passport_exp_year_{{ e }}"
+                                        style="min-width:60px" [(ngModel)]="element.pax_passport_exp_year" required>
+                                        <option selected="selected" value="0" disabled>Year</option>
+                                        <option *ngFor="let ae of arraySelectExpiracion" value="{{ae}}">{{ae}}</option>
+                                    </select>
+                                </span></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="cells">
+                    <table>
+                        <tr>
+                            <td style="font-family: Lato,sans-serif; font-size: 16px;">Marital Status: </td>
+                            <td>
+                                <!--<input type="text" name="pax_marital_status{{ e }}" id="pax_marital_status{{ e }}" #pax_marital_status="ngModel" [(ngModel)]="element.pax_marital_status" required>-->
+                                <select id="pax_marital_status{{ e }}" name="pax_marital_status{{ e }}"
+                                    #pax_marital_status="ngModel" [(ngModel)]="element.pax_marital_status" required>
+                                    <option value="Single">Single</option>
+                                    <option value="Married">Married</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tr>
+                            <td style="font-family: Lato,sans-serif; font-size: 16px;">Emergency Contact: <strong
+                                    style="font-weight: bold;">(*)</strong></td>
+                            <td>
+                                <input type="text" name="pax_emergency_contact_{{ e }}"
+                                    id="pax_emergency_contact_{{ e }}" #pax_emergency_contact="ngModel"
+                                    [(ngModel)]="element.pax_emergency_contact" placeholder="Name / Phone" required
+                                    style="height: 40px; width: 100%">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td style="font-family: Lato,sans-serif; font-size: 16px;">Arrival in Ecuador: <strong
+                                        style="font-weight: bold;"></strong></td>
+                                <td>
+                                    <!--<input type="text" name="pax_arrival_date_{{ e }}" id="pax_arrival_date_{{ e }}" #pax_arrival_date="ngModel" [(ngModel)]="element.pax_arrival_date">-->
+                                    <mat-form-field>
+                                        <input readonly matInput [min]="minDateArrival" [matDatepicker]="dp"
+                                            name="pax_arrival_date_{{ e }}" id="pax_arrival_date_{{ e }}"
+                                            #pax_arrival_date="ngModel" [(ngModel)]="element.pax_arrival_date">
+                                        <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                                        <mat-datepicker #dp></mat-datepicker>
+                                    </mat-form-field>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td style="font-family: Lato,sans-serif; font-size: 16px;">Arrival flight name and
+                                    number: <strong style="font-weight: bold;"></strong></td>
+                                <td><input type="text" name="pax_arrival_flight_{{ e }}" id="pax_arrival_flight_{{ e }}"
+                                        #pax_arrival_flight="ngModel" [(ngModel)]="element.pax_arrival_flight"
+                                        placeholder="AV1234" maxlength="15" style="height: 40px; width: 100%"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td style="font-family: Lato,sans-serif; font-size: 16px;">Departure date from Ecuador:
+                                    <strong style="font-weight: bold;"></strong></td>
+                                <td>
+                                    <!--<input type="text" name="pax_departure_date_{{ e }}" id="pax_departure_date_{{ e }}" #pax_departure_date="ngModel" [(ngModel)]="element.pax_departure_date">-->
+                                    <mat-form-field>
+                                        <input readonly matInput [min]="minDateDeparture" [matDatepicker]="dp1"
+                                            name="pax_departure_date_{{ e }}" id="pax_departure_date_{{ e }}"
+                                            #pax_departure_date="ngModel" [(ngModel)]="element.pax_departure_date">
+                                        <mat-datepicker-toggle matSuffix [for]="dp1"></mat-datepicker-toggle>
+                                        <mat-datepicker #dp1></mat-datepicker>
+                                    </mat-form-field>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td style="font-family: Lato,sans-serif; font-size: 16px;">Departure flight name and
+                                    number: <strong style="font-weight: bold;"></strong></td>
+                                <td><input type="text" name="pax_departure_flight_{{ e }}"
+                                        id="pax_departure_flight_{{ e }}" #pax_departure_flight="ngModel"
+                                        [(ngModel)]="element.pax_departure_flight" placeholder="AV1234" maxlength="15"
+                                        style="height: 40px; width: 100%"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td style="font-family: Lato,sans-serif; font-size: 16px;">Type of Accommodation:
+                                    <strong style="font-weight: bold;">(*)</strong></td>
+                                <td>
+                                    <select id="pax_type_acomm{{ e }}" name="pax_type_acomm{{ e }}"
+                                        #pax_type_acomm="ngModel" [(ngModel)]="element.pax_type_acomm" required>
+                                        <option value="Twin (2 beds)">Twin (2 beds)</option>
+                                        <option value="Double (1 bed)">Double (1 bed)</option>
+                                        <option value="Triple">Triple</option>
+                                        <option value="Quadruple">Quadruple</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td style="font-family: Lato,sans-serif; font-size: 16px;">US Shoe Size:</td>
+                                <td>
+                                    <select id="pax_us_shoe_size{{ e }}" name="pax_us_shoe_size{{ e }}" 
+                                    #pax_us_shoe_size="ngModel" [(ngModel)]="element.pax_us_shoe_size">
+                                        <option *ngFor="let size of arrayShoeSize" value="{{ size }}">{{ size }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tr>
+                            <td style="font-family: Lato,sans-serif; font-size: 16px;">Travel Insurance Company:<strong
+                                    style="font-weight: bold;"></strong></td>
+                            <td>
+                                <input type="text" name="pax_insurance_company_{{ e }}"
+                                    id="pax_insurance_company_{{ e }}" [(ngModel)]="element.pax_insurance_company"
+                                    style="height: 40px; width: 100%">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tr>
+                            <td style="font-family: Lato,sans-serif; font-size: 16px;">Travel Insurance Number: </td>
+                            <td>
+                                <input type="text" name="pax_insurance_number_{{ e }}" id="pax_insurance_number_{{ e }}"
+                                    [(ngModel)]="element.pax_insurance_number" style="height: 40px; width: 100%">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tr>
+                            <td valign="top" style="font-family: Lato,sans-serif; font-size: 16px;">Hotel Contact before
+                                cruise/tour (in Quito, Guayaquil or Galapagos): </td>
+                            <td><textarea name="pax_contact_hotel_{{ e }}" id="pax_contact_hotel_{{ e }}"
+                                    [(ngModel)]="element.pax_contact_hotel"
+                                    style="height: 122px !important; width: 100%"></textarea></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="cells">
+                    <table>
+                        <tr>
+                            <td style="font-family: Lato,sans-serif; font-size: 16px;">Food restrictions/ allergies/
+                                disabilities: <strong style="font-weight: bold;">(*)</strong></td>
+                            <td><textarea name="pax_restrictions_{{ e }}" id="pax_restrictions_{{ e }}"
+                                    #pax_restrictions="ngModel" [(ngModel)]="element.pax_restrictions" required
+                                    style="height: 122px !important; width: 100%"></textarea></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <section>
+            <div>
+                <h2>Add Files </h2><small><strong>Passport Information Page (JPG or PNG):</strong>Upload the page with
+                    your <strong>photo and passport details</strong>, not a personal photo or the cover.</small>
+                <div appNgDropFiles ng2FileSelect [archivosTemporales]="archivosTemporales"
+                    (mouseSobre)="sobreElemento=$event" (process)="setProcessAction($event)" [idOrder]="idOrder"
+                    [imagenTemp]="imagenTemp" [ngClass]="{ 'file-over': sobreElemento }" class="well drop-zone"
+                    style="width: 100%">
+                    <h4 style="font-family: Lato,sans-serif; font-size: 16px; margin-top: 21px;">Drag your files here
+                    </h4>
+                    <img style="display: flex; justify-content: center; align-items: center;"
+                        src="assets/images/drop-images.png" class="img-fluid" style="max-width: 100%; height: auto;">
+                </div>
+                <div class="row" style="padding: 15px; width: 100%;">
+                    <input type="text" appNgDropFiles ng2FileSelect [idOrder]="idOrder" value="{{order?._id}}"
+                        style="display: none">
+                    <div>
+                        <label for="file" class="btnUpload">
+                            <input type="file" *ngIf="!isLoading" (change)="agregaInput($event.target.files[0])"
+                                name="file" id="file" class="form-control" style="display:none"
+                                accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+                            <input type="file" *ngIf="isLoading" disabled name="file" id="file" class="form-control"
+                                style="display:none"
+                                accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+                            <i class="fa fa-cloud-upload"></i> Upload File
+                        </label>
+                        <p class="note">
+                            <strong style="font-weight: bold;">Accepted file types:</strong> JPG or PNG only.
+                        </p>s
+                    </div>
+                    <div class="alert alert-danger" *ngIf="msgErrorSizeFile">
+                        <strong>Error!</strong> File is too big. File Max <strong>10 MB.</strong>
+                    </div>
+                    <div class="alert alert-danger" *ngIf="msgErrorExtensionFile">
+                        <strong>Error!</strong> Extension File no validate. Attach only <strong>jpg, jpeg, png, JPG,
+                            PNG</strong> files, please.
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div>
+                <!--h3>Preselected Files</h3-->
+                <table class="table" style="width: 100%; text-align: center">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name File</th>
+                            <th>Size</th>
+                            <th>View</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let itemu of archivosTemporales.queue; let a = index">
+
+                            <th scope="row">{{ a + 1 }}</th>
+                            <td> {{ itemu.some.name }} </td>
+                            <td> {{ itemu.file.size /1024 /1024|number: '.2-2'}} MB </td>
+                            <td>
+                                <img src="{{muestraImagen(itemu.file.name)}}" style="width: 100px">
+                            </td>
+                            <td nowrap>
+                                <button type="button" class="btn"
+                                    (click)="dialoQuitarArchivo('quita',a)">Remove</button>
+                            </td>
+                        </tr>
+                        <ng-container *ngIf="isLoading">
+
+                            <tr *ngFor="let item of rowsLoading">
+
+                                <th scope="row">
+                                    <div class="text w-100 loading-animate-blue" style="height:22px; width:200px;">
+                                    </div>
+                                </th>
+                                <td>
+                                    loading...
+                                </td>
+                                <td colspan="3">
+                                    <div class="text w-100 loading-animate-blue" style="height:22px; width:200px;">
+                                    </div>
+                                </td>
+
+
+                            </tr>
+                        </ng-container>
+
+
+                    </tbody>
+                </table>
+                <br>
+                <button (click)="dialoQuitarArchivos()" type="button" class="btn">
+                    Remove All Files
+                </button>
+
+            </div>
+        </section>
+
+
+        <div style="text-align: center; padding: 15px;">
+            <label>I read & agreed to the <a href="{{urlTermsCondi}}" target="_blank" style="font-weight: bold;"> TERMS
+                    and conditions </a>
+                <input style="padding-left: 5px;" type="checkbox" name="check_conditions" id="check_conditions"
+                    #check_conditions="ngModel" [(ngModel)]="order.check_conditions" required>
+            </label>
+        </div>
+        <div id="check-errors" class="pink-errors">
+            <span id="error-check"></span>
+        </div>
+        <!-- ========================================================== -->
+        <!-- ========== Visualizacion de imagen de loadingf =========== -->
+        <div *ngIf="mostrarLoading"
+            style="background:url(https://www.galapagosislands.com/sbi/assets/images/loading.gif) no-repeat center center;width: 100%;height:32px;margin-top: 25px;">
+        </div>
+        <!-- ========================================================== -->
+        <div *ngIf="mostrarBotonSubmit">
+            <!--<button type="submit" id="submit" class="large">SUBMIT {{ formaRegistro.valid }}</button>-->
+            <button type="submit" id="submit" class="large">SUBMIT</button>
+        </div>
+    </form>
+    <!---->
+    <!-- ============================================================================================================= -->
+    <p class="note">
+        * Your passport must be valid for at least 6 months after your departure date from Ecuador.
+    </p>
+    <!--p class="note">
+    **When entering Ecuador you are obliged to present a copy or official documentation of a health insurance valid during your whole stay in Ecuador.
+  </p-->
+
+</div>
+<app-footer-register-edit></app-footer-register-edit>

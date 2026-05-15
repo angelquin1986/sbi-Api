@@ -1,0 +1,899 @@
+[{
+  "_id": {
+    "$oid": "5b61d9fdaa5d5fa0a78b47fb"
+  },
+  "nombre": "Ximena Paredes",
+  "cargo": "Controller",
+  "mail": "xparedes@galapagosislands.com",
+  "ext": "138",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0992 795597"
+},
+{
+  "_id": {
+    "$oid": "5b61dc86aa5d5fa0a78b4ca2"
+  },
+  "nombre": "Alexandra Ruiz",
+  "cargo": "Reservas y Ventas Locales",
+  "mail": "ventas3@royalgalapagos.com",
+  "ext": "271",
+  "ext_Royal_GPS": "106",
+  "ext_Ip": "",
+  "cel_ofi": "0982 599159"
+},
+{
+  "_id": {
+    "$oid": "5b61da0faa5d5fa0a78b4829"
+  },
+  "nombre": "Tatiana Narváez",
+  "cargo": "Asistencia de Costos",
+  "mail": "tatiana@galapagosislands.com",
+  "ext": "104",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 603129"
+},
+{
+  "_id": {
+    "$oid": "5b61dab8aa5d5fa0a78b4975"
+  },
+  "nombre": "Esteban Mancheno ",
+  "cargo": "Trip Advisor ",
+  "mail": "esteban@galapagosislands.com",
+  "ext": "145",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0984 301071"
+},
+{
+  "_id": {
+    "$oid": "5b61da06aa5d5fa0a78b4812"
+  },
+  "nombre": "Rubén Cáceres ",
+  "cargo": "Contador General",
+  "mail": "ruben@galapagosislands.com",
+  "ext": "105",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 361998"
+},
+{
+  "_id": {
+    "$oid": "5b61d9b7aa5d5fa0a78b4748"
+  },
+  "nombre": "Danny Herdoiza",
+  "cargo": "Imagen Corporativa",
+  "mail": "dherdoiza@galapagosislands.com",
+  "ext": "149",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0998 961313"
+},
+{
+  "_id": {
+    "$oid": "5b61dcd9aa5d5fa0a78b4d35"
+  },
+  "nombre": "Patiño Yhuliana",
+  "cargo": "Ventas Internacionales ",
+  "mail": "ventas2@royalgalapagos.com",
+  "ext": "166",
+  "ext_Royal_GPS": "105",
+  "ext_Ip": "",
+  "cel_ofi": "0998 819117"
+},
+{
+  "_id": {
+    "$oid": "5b61db77aa5d5fa0a78b4a92"
+  },
+  "nombre": "Liliana Pilataxi",
+  "cargo": "Asistente de Operaciones Land",
+  "mail": "lpilataxi@galapagosislands.com",
+  "ext": "132",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0992 552735"
+},
+{
+  "_id": {
+    "$oid": "5b61db48aa5d5fa0a78b4a46"
+  },
+  "nombre": "Carmen Zambrano",
+  "cargo": "Asistencia Land Galápagos ",
+  "mail": "carmen@galapagosislands.com",
+  "ext": "164",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0984 298253"
+},
+{
+  "_id": {
+    "$oid": "5b61da71aa5d5fa0a78b48e7"
+  },
+  "nombre": "Daniela Paredes",
+  "cargo": "Trip Advisor ",
+  "mail": "dparedes@galapagosislands.com",
+  "ext": "117",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 373771"
+},
+{
+  "_id": {
+    "$oid": "5b61dca4aa5d5fa0a78b4ce6"
+  },
+  "nombre": "Verónica Pineda ",
+  "cargo": "Ventas Internacionales ",
+  "mail": "sales4@royalgalapagos.com",
+  "ext": "142",
+  "ext_Royal_GPS": "110",
+  "ext_Ip": "",
+  "cel_ofi": "0992 773594"
+},
+{
+  "_id": {
+    "$oid": "5b61dbd0aa5d5fa0a78b4b4d"
+  },
+  "nombre": "Gabriela Vásquez ",
+  "cargo": "Coordinadora de Marketing",
+  "mail": "gabriela@galapagosislands.com",
+  "ext": "141",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "159",
+  "cel_ofi": "0984 292 877"
+},
+{
+  "_id": {
+    "$oid": "5b61dbefaa5d5fa0a78b4b92"
+  },
+  "nombre": "Jorge Mancero",
+  "cargo": "Community Manager",
+  "mail": "jorge@galapagosislands.com",
+  "ext": "270",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0995 856611"
+},
+{
+  "_id": {
+    "$oid": "5b61db64aa5d5fa0a78b4a65"
+  },
+  "nombre": "Gema Yanez ",
+  "cargo": "Asistencia Land Galápagos ",
+  "mail": "gyanez@galapagosislands.com",
+  "ext": "137",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0999 613420"
+},
+{
+  "_id": {
+    "$oid": "5b61dc6baa5d5fa0a78b4c5d"
+  },
+  "nombre": "Alexis Bravo ",
+  "cargo": "Desarrollo Web",
+  "mail": "abravo@galapagosisland.com",
+  "ext": "122",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0990 426072"
+},
+{
+  "_id": {
+    "$oid": "5b61db9aaa5d5fa0a78b4ad9"
+  },
+  "nombre": "José Luis Egas",
+  "cargo": "Asistente de Operaciones Land",
+  "mail": "jose@galapagosislands.com",
+  "ext": "273",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0984 298531"
+},
+{
+  "_id": {
+    "$oid": "5b61dc5caa5d5fa0a78b4c44"
+  },
+  "nombre": "Leonardo Medina ",
+  "cargo": "Desarrollo Web",
+  "mail": "lmedina@galapagosislands.com",
+  "ext": "122",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0990 546223"
+},
+{
+  "_id": {
+    "$oid": "5b61da82aa5d5fa0a78b4914"
+  },
+  "nombre": "Lilián Chafla ",
+  "cargo": "Trip Advisor ",
+  "mail": "lilian@galapagosislands.com",
+  "ext": "126",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0992 719877"
+},
+{
+  "_id": {
+    "$oid": "5b61dbf7aa5d5fa0a78b4ba9"
+  },
+  "nombre": "César Céspedes ",
+  "cargo": "Diseñador Gráfico Y Multimedia",
+  "mail": "market1@galapagosislands.com",
+  "ext": "109",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0984 299620"
+},
+{
+  "_id": {
+    "$oid": "5b61dc8eaa5d5fa0a78b4cb7"
+  },
+  "nombre": "Hitomi Kamimura",
+  "cargo": "Reservas y Ventas Locales",
+  "mail": "sales12@royagalapagos.com",
+  "ext": "142",
+  "ext_Royal_GPS": "109",
+  "ext_Ip": "",
+  "cel_ofi": "0987 361404"
+},
+{
+  "_id": {
+    "$oid": "5b61dce9aa5d5fa0a78b4d62"
+  },
+  "nombre": "Jessica Saltos ",
+  "cargo": "Coordinadora Operaciones GPS",
+  "mail": "jessica@royalgalapagos.com",
+  "ext": "3013390",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0992 529346"
+},
+{
+  "_id": {
+    "$oid": "5b61db25aa5d5fa0a78b49ec"
+  },
+  "nombre": "Melissa Montalvo ",
+  "cargo": "Asistente de Ventas",
+  "mail": "melissa@galapagosislands.com",
+  "ext": "147",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0992 731 214"
+},
+{
+  "_id": {
+    "$oid": "5b61da35aa5d5fa0a78b4896"
+  },
+  "nombre": "Marcia Cujilema ",
+  "cargo": "Asistencia Contable ",
+  "mail": "mcujilema@galapagosislands.com",
+  "ext": "157",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 911468"
+},
+{
+  "_id": {
+    "$oid": "5b61daafaa5d5fa0a78b495f"
+  },
+  "nombre": "Diana Endara ",
+  "cargo": "Trip Advisor ",
+  "mail": "diana@galapagosislands.com",
+  "ext": "272",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0984 058373"
+},
+{
+  "_id": {
+    "$oid": "5b61db13aa5d5fa0a78b49c0"
+  },
+  "nombre": "Ventas",
+  "cargo": "Ventas",
+  "mail": "",
+  "ext": "",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "6020851"
+},
+{
+  "_id": {
+    "$oid": "5b61dbe6aa5d5fa0a78b4b7c"
+  },
+  "nombre": "Juan Carcelén",
+  "cargo": "Jefe de Diseño",
+  "mail": "jcarcelen@galapagosislands.com",
+  "ext": "109",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0983 652098"
+},
+{
+  "_id": {
+    "$oid": "5b61dcf1aa5d5fa0a78b4d78"
+  },
+  "nombre": "Paola Herrera ",
+  "cargo": "Trip Advisor - Home",
+  "mail": "paola@galapagosislands.com",
+  "ext": "6038124",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0999 216261"
+},
+{
+  "_id": {
+    "$oid": "5b61d9d4aa5d5fa0a78b478c"
+  },
+  "nombre": "Jorge Cando",
+  "cargo": "Mensajería ",
+  "mail": "jcando@galapagosislands.com",
+  "ext": "",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 604015"
+},
+{
+  "_id": {
+    "$oid": "5b61da16aa5d5fa0a78b483e"
+  },
+  "nombre": "Elizabeth Peralvo",
+  "cargo": "Asistencia Contable ",
+  "mail": "eperalvo@galapasosislands.com",
+  "ext": "104",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 602785"
+},
+{
+  "_id": {
+    "$oid": "5b61db7faa5d5fa0a78b4aa8"
+  },
+  "nombre": "Tamara Carrasquilla ",
+  "cargo": "Asistente de Operaciones Land",
+  "mail": "tamara@galapagosislands.com",
+  "ext": "133",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0999 722096"
+},
+{
+  "_id": {
+    "$oid": "5b61d9ddaa5d5fa0a78b47a3"
+  },
+  "nombre": "Pablo Sigcha",
+  "cargo": "Mensajería ",
+  "mail": "psigcha@galapagosislands.com",
+  "ext": "",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0984 298698"
+},
+{
+  "_id": {
+    "$oid": "5b61d9adaa5d5fa0a78b4731"
+  },
+  "nombre": "María Elena Muñoz ",
+  "cargo": "Gerencia General",
+  "mail": "mariaelena@galapagosislands.com",
+  "ext": "123",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "163",
+  "cel_ofi": "0984 498411"
+},
+{
+  "_id": {
+    "$oid": "5b61da48aa5d5fa0a78b48c4"
+  },
+  "nombre": "Teresa Chicaiza ",
+  "cargo": "Asistencia Contable ",
+  "mail": "teresa@galapagosislands.com",
+  "ext": "144",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0984 577670"
+},
+{
+  "_id": {
+    "$oid": "5b61dbb9aa5d5fa0a78b4b1e"
+  },
+  "nombre": "Gabriel Egas ",
+  "cargo": "Asistente de Proyectos",
+  "mail": "sales@royalgalapagos.com",
+  "ext": "153",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 392269"
+},
+{
+  "_id": {
+    "$oid": "5b61dbb0aa5d5fa0a78b4b08"
+  },
+  "nombre": "Maran Rueda ",
+  "cargo": "Sales Manager",
+  "mail": "maran@galapagosislands.com",
+  "ext": "112",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0984 489593"
+},
+{
+  "_id": {
+    "$oid": "5b61dc2aaa5d5fa0a78b4bf8"
+  },
+  "nombre": "Fernando Merino ",
+  "cargo": "Jefe de Desarrollo",
+  "mail": "fmerino@galapagosislands.com",
+  "ext": "131",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0982 667445"
+},
+{
+  "_id": {
+    "$oid": "5d83bac19c0ffe62d029fdba"
+  },
+  "nombre": "Wilmer Guevara",
+  "cargo": "Desarrollo Web",
+  "mail": "wguevara@galapagosislands.com",
+  "ext": "122",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": ""
+},
+{
+  "_id": {
+    "$oid": "5b61d9a4aa5d5fa0a78b471a"
+  },
+  "nombre": "James Wilson",
+  "cargo": "Presidencia",
+  "mail": "jim@galapagosislands.com",
+  "ext": "139",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "162",
+  "cel_ofi": "0992 528775"
+},
+{
+  "_id": {
+    "$oid": "5b61dbc5aa5d5fa0a78b4b36"
+  },
+  "nombre": "Sandra Liviapoma",
+  "cargo": "Asistente de Proyectos",
+  "mail": "sandra@galapagosislands.com",
+  "ext": "153",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": ""
+},
+{
+  "_id": {
+    "$oid": "5b61dc19aa5d5fa0a78b4bcb"
+  },
+  "nombre": "Marketing ",
+  "cargo": "Marketing ",
+  "mail": "info@galapagosislands.com",
+  "ext": "148",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0984 300746"
+},
+{
+  "_id": {
+    "$oid": "5b61dce1aa5d5fa0a78b4d4c"
+  },
+  "nombre": "Diego Morales ",
+  "cargo": "Asistente de Ventas",
+  "mail": "operaciones@royalgalapagos.com",
+  "ext": "143",
+  "ext_Royal_GPS": "108",
+  "ext_Ip": "",
+  "cel_ofi": "0992 795647"
+},
+{
+  "_id": {
+    "$oid": "5b61db2daa5d5fa0a78b4a03"
+  },
+  "nombre": "Karolina Lema",
+  "cargo": "Asistente de Ventas",
+  "mail": "karolina@galapagosislands.com",
+  "ext": "136",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0997 028587"
+},
+{
+  "_id": {
+    "$oid": "5b61dc33aa5d5fa0a78b4c0e"
+  },
+  "nombre": "Cristian Latorre ",
+  "cargo": "Asistente de Sistemas",
+  "mail": "clatorre@galapagosislands.com ",
+  "ext": "113",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 603966"
+},
+{
+  "_id": {
+    "$oid": "5b61dd03aa5d5fa0a78b4da5"
+  },
+  "nombre": "Maria Augusta Cuisana ",
+  "cargo": "Trip Advisor - Home",
+  "mail": "magus@galapagosislands.com",
+  "ext": "2060243",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0998 725013"
+},
+{
+  "_id": {
+    "$oid": "5b61db36aa5d5fa0a78b4a1a"
+  },
+  "nombre": "Cristina Marcillo ",
+  "cargo": "Asistente de Ventas",
+  "mail": "cmarcillo@galapagosislands.com",
+  "ext": "153",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0988 140507"
+},
+{
+  "_id": {
+    "$oid": "5b61dcfaaa5d5fa0a78b4d8e"
+  },
+  "nombre": "Olga Salazar ",
+  "cargo": "Trip Advisor - Home",
+  "mail": "olga@galapagosislands.com",
+  "ext": "3301604",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0998 165462"
+},
+{
+  "_id": {
+    "$oid": "5b61db3faa5d5fa0a78b4a30"
+  },
+  "nombre": "Alejandro Gutierrez ",
+  "cargo": "Gerente de Operaciones",
+  "mail": "alejandro@galapagosislands.com",
+  "ext": "168",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0990 603574"
+},
+{
+  "_id": {
+    "$oid": "5b61dc21aa5d5fa0a78b4be1"
+  },
+  "nombre": "Santiago Guachamin ",
+  "cargo": "Gerencia Sistemas",
+  "mail": "santiago@galapagosislands.com",
+  "ext": "110",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0984 301620"
+},
+{
+  "_id": {
+    "$oid": "5b61dc52aa5d5fa0a78b4c2d"
+  },
+  "nombre": "Anita Verdezoto",
+  "cargo": "Desarrollo Web",
+  "mail": "averdezoto@galapagosislands.com",
+  "ext": "122",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": ""
+},
+{
+  "_id": {
+    "$oid": "5b61daa6aa5d5fa0a78b4949"
+  },
+  "nombre": "Lorena Clavijo ",
+  "cargo": "Trip Advisor ",
+  "mail": "elizabeth@galapagosislands.com",
+  "ext": "129",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 555500"
+},
+{
+  "_id": {
+    "$oid": "5b61dd0caa5d5fa0a78b4dbb"
+  },
+  "nombre": "Lorena Alulema ",
+  "cargo": "Trip Advisor - Home",
+  "mail": "lorena@galapagosislands.com",
+  "ext": "3464782",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0984 635027"
+},
+{
+  "_id": {
+    "$oid": "5b61da9aaa5d5fa0a78b4930"
+  },
+  "nombre": "Rosa Mena ",
+  "cargo": "Trip Advisor ",
+  "mail": "rmena@galapagosislands.com",
+  "ext": "152",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0998 750075"
+},
+{
+  "_id": {
+    "$oid": "5b61dcd1aa5d5fa0a78b4d1f"
+  },
+  "nombre": "Angela Cevallos ",
+  "cargo": "Ventas Internacionales ",
+  "mail": "sales5@royalgalapagos.com",
+  "ext": "150",
+  "ext_Royal_GPS": "107",
+  "ext_Ip": "",
+  "cel_ofi": "0984 298328"
+},
+{
+  "_id": {
+    "$oid": "5b61d9f6aa5d5fa0a78b47e6"
+  },
+  "nombre": "Vinicio Narváez ",
+  "cargo": "Gerente Financiero",
+  "mail": "vinicio@galapagosislands.com",
+  "ext": "108",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "160",
+  "cel_ofi": "0984 580237"
+},
+{
+  "_id": {
+    "$oid": "5b61da25aa5d5fa0a78b486a"
+  },
+  "nombre": "Lorena Andrade ",
+  "cargo": "Asistencia Contable ",
+  "mail": "marialorena@galapagosislands.com",
+  "ext": "106",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 909770"
+},
+{
+  "_id": {
+    "$oid": "5b61da1eaa5d5fa0a78b4855"
+  },
+  "nombre": "Vannesa Luzón ",
+  "cargo": "Asistencia Contable ",
+  "mail": "vanessa@galapagosislands.com",
+  "ext": "104",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0986 823039"
+},
+{
+  "_id": {
+    "$oid": "5b61d9edaa5d5fa0a78b47cf"
+  },
+  "nombre": "Cristina Sigcha",
+  "cargo": "Auxiliar de Servicios",
+  "mail": "",
+  "ext": "",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "098 3267953"
+},
+{
+  "_id": {
+    "$oid": "5b61db1baa5d5fa0a78b49d5"
+  },
+  "nombre": "Ingrid Vergara ",
+  "cargo": "Asistente de Ventas",
+  "mail": "ingrid@galapagosislands.com",
+  "ext": "124",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0992 944182"
+},
+{
+  "_id": {
+    "$oid": "5b61d9c1aa5d5fa0a78b475f"
+  },
+  "nombre": "Belén Pastrano",
+  "cargo": "Coordinadora Recursos Humanos",
+  "mail": "mabelen@galapagosislands.com",
+  "ext": "151",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 360399"
+},
+{
+  "_id": {
+    "$oid": "5b61da2daa5d5fa0a78b4881"
+  },
+  "nombre": "Andrea Salas ",
+  "cargo": "Asistencia Contable ",
+  "mail": "asalas@galapagosislands.com",
+  "ext": "106",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0984 063422"
+},
+{
+  "_id": {
+    "$oid": "5b61dc74aa5d5fa0a78b4c74"
+  },
+  "nombre": "Edisson Toapanta ",
+  "cargo": "Desarrollo Web",
+  "mail": "edisson@galapagosislands.com",
+  "ext": "120",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 452025"
+},
+{
+  "_id": {
+    "$oid": "5b61dccaaa5d5fa0a78b4d09"
+  },
+  "nombre": "Gustavo Reyes ",
+  "cargo": "Ventas Internacionales ",
+  "mail": "sales9@royalgalapagos.com",
+  "ext": "150",
+  "ext_Royal_GPS": "111",
+  "ext_Ip": "",
+  "cel_ofi": "0999 408112"
+},
+{
+  "_id": {
+    "$oid": "5b61d9cbaa5d5fa0a78b4776"
+  },
+  "nombre": "Anita Bayas Piedra",
+  "cargo": "Recepción",
+  "mail": "recepcion@galapagosislands.com",
+  "ext": "101",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "100",
+  "cel_ofi": "0990 333269"
+},
+{
+  "_id": {
+    "$oid": "5b61db92aa5d5fa0a78b4ac3"
+  },
+  "nombre": "Andrea Carrión",
+  "cargo": "Asistente de Operaciones Land",
+  "mail": "acarrion@galapagosislands.com",
+  "ext": "133",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 602794"
+},
+{
+  "_id": {
+    "$oid": "5b61d9e5aa5d5fa0a78b47b9"
+  },
+  "nombre": "María Millingalle ",
+  "cargo": "Auxiliar de Servicios ",
+  "mail": "",
+  "ext": "",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0995 468896"
+},
+{
+  "_id": {
+    "$oid": "5b61db6caa5d5fa0a78b4a7a"
+  },
+  "nombre": "Washington Cando",
+  "cargo": "Asistente de Operaciones Land",
+  "mail": "wcando@galapagosislands.com",
+  "ext": "116",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 451881"
+},
+{
+  "_id": {
+    "$oid": "5b61da3faa5d5fa0a78b48ad"
+  },
+  "nombre": "Alexandra Llumiquinga ",
+  "cargo": "Asistencia Contable ",
+  "mail": "mllumiquinga@galapagosislands.com",
+  "ext": "114",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0990 470216"
+},
+{
+  "_id": {
+    "$oid": "5b61dac2aa5d5fa0a78b498c"
+  },
+  "nombre": "Gabriela Aguilar ",
+  "cargo": "Trip Advisor ",
+  "mail": "gaguilar@galapagosislands.com",
+  "ext": "130",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0984 299779"
+},
+{
+  "_id": {
+    "$oid": "5b61da79aa5d5fa0a78b48fe"
+  },
+  "nombre": "Tamara Gavica ",
+  "cargo": "Trip Advisor ",
+  "mail": "tgavica@galapagosislands.com",
+  "ext": "118",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0988 259922"
+},
+{
+  "_id": {
+    "$oid": "5b61dd14aa5d5fa0a78b4dd1"
+  },
+  "nombre": "Daniela Orellana ",
+  "cargo": "Trip Advisor - Home",
+  "mail": "dorellana@galapagosislands.com",
+  "ext": "-",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0987 358828"
+},
+{
+  "_id": {
+    "$oid": "5b61dba9aa5d5fa0a78b4af1"
+  },
+  "nombre": "Marcelo Sigcha",
+  "cargo": "Chofer County GTC",
+  "mail": "transporteturisticoms@gmail.com",
+  "ext": "-",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0992 954324"
+},
+{
+  "_id": {
+    "$oid": "5b61dbddaa5d5fa0a78b4b65"
+  },
+  "nombre": "Geovanna Puebla ",
+  "cargo": "Asistente de Marketing",
+  "mail": "geova@galapagosislands.com",
+  "ext": "107",
+  "ext_Royal_GPS": "",
+  "ext_Ip": "",
+  "cel_ofi": "0992 951817"
+},
+{
+  "_id": {
+    "$oid": "5b61dc98aa5d5fa0a78b4cce"
+  },
+  "nombre": "Carolina Egas ",
+  "cargo": "Reservas y Ventas Locales",
+  "mail": "sales7@royalgalapagos.com",
+  "ext": "142",
+  "ext_Royal_GPS": "102",
+  "ext_Ip": "",
+  "cel_ofi": "0984 453016"
+},
+{
+  "_id": {
+    "$oid": "5b61dc7caa5d5fa0a78b4c8b"
+  },
+  "nombre": "Bertha Hervas",
+  "cargo": "Gerencia Ventas",
+  "mail": "ventas@royalgalapagos.com",
+  "ext": "165",
+  "ext_Royal_GPS": "104",
+  "ext_Ip": "",
+  "cel_ofi": "0983 509004"
+},
+{
+  "_id": {
+    "$oid": "681ce84291acf475bbd34ab5"
+  },
+  "role": "OPERACION_ROLE",
+  "id": "37",
+  "nseller": "Gabriela Vasquez",
+  "nuser": "gvasquez",
+  "mailseller": "gabriela@royalgalapagos.com",
+  "company": "royal"
+}]

@@ -1,0 +1,141 @@
+<div class="container" style="background: white;">
+
+  <div *ngIf="order.tm_date_cruise" class="countdown">
+    <img src="./assets/images/clock.png" width="20" height="20" alt=""/> This form expires in: <span id="countOrder"></span>
+  </div>
+  <!-- ================================================================================================= -->
+  <!-- Barra de Progreso que va incrementando hasta que termine de cargar todas las imagenes -->
+  <!-- ================================================================================================= -->
+  <ng-progress></ng-progress>
+  <!-- ================================================================================================= -->
+  <!-- ================================================================================================= -->
+  <!-- seccion que se carga los datos del vendedor -->
+  <app-header-register-edit [muestra]="false"> </app-header-register-edit>
+  <!-- ================================================================================================= -->
+  <br>
+  <!--<p *ngIf="order.tm_date_cruise"> This form has a limited time availability so please send it before <b><span id="expFecha">{{ order.tm_date_cruise | date: "dd MMMM, y" }}</span></b> ( <span id="countOrder"></span> )</p>-->
+  <div class="greyback">
+    <div class="cells">
+      <table>
+        <tr>
+          <td valign="top"><strong style="font-weight: bold;">Sales agent:</strong></td>
+          <td style="font-family: Lato,sans-serif; font-size: 16px;">{{ nameSeller }} (<a href="#">{{ mailSeller }}</a>) </td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td valign="top"><strong style="font-weight: bold;">Token #:</strong></td>
+          <td style="font-family: Lato,sans-serif; font-size: 16px;">{{ order?._id }}</td>
+        </tr>
+        <tr>
+          <td><strong style="font-weight: bold;">Request date:</strong></td>
+          <td style="font-family: Lato,sans-serif; font-size: 16px; color: black">{{ order?.date_submited | date: "dd MMMM, y h:mm a" }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <hr>
+
+  <!-- =============================================================================================================== -->
+
+  <!-- =============================================================================================================== -->
+  <form #formaRegistro="ngForm" name="myForm" (ngSubmit)="guardaArchivos()" onsubmit="validaForm(this)">
+    <!-- =============================================================================================================== -->
+    <div >
+      <h2>Documents</h2>
+      <p class="note">
+        Agregue los documentos relacionados con la operacion del crucero (voucher, postales, fotos, promos)
+        <br>
+        * Acepta solo <strong style="font-weight: bold;"><em>imagen, word o pdf </em></strong>
+      </p>
+    <section>
+      <div>
+<!--        <h2>Add Files </h2>-->
+        <div appNgDropDocumentos ng2FileSelect [archivosTemporales]="archivosTemporales" (mouseSobre)="sobreElemento=$event" [idOrder]="idOrder"
+             [imagenTemp]="imagenTemp" [ngClass]="{ 'file-over': sobreElemento }" class="well drop-zone" style="width: 100%">
+          <h4 style="font-family: Lato,sans-serif; font-size: 16px; margin-top: 21px;">Drag your files here</h4>
+          <img  style="display: flex; justify-content: center; align-items: center;" src="assets/images/drop-images.png" class="img-fluid" style="max-width: 100%; height: auto;">
+        </div>
+        <!-- <br> -->
+        <div class="row" style="padding: 15px;">
+          <input type="text" appNgDropDocumentos ng2FileSelect [idOrder]="idOrder" value="{{order?._id}}" style="display: none">
+          <div>
+            <label for="file" class="btnUpload">
+              <input  type="file" (change)="agregaInput($event.target.files[0])" name="file" id="file" class="form-control" style="display:none" accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+              <input  type="file" (change)="agregaInput($event.target.files[0])" name="file" id="file" class="form-control" style="display:none" accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+              <i class="fa fa-cloud-upload"></i> Upload File
+            </label>
+<!--            <p class="note">-->
+<!--              * To download an image, <strong style="font-weight: bold;"><em>right click on the image</em></strong> and choose to <strong style="font-weight: bold;"><em>save as</em></strong>-->
+<!--            </p>-->
+          </div>
+          <br>
+          <div class="alert alert-danger" *ngIf="msgErrorSizeFile">
+            <strong style="font-weight: bold;">Error!</strong> File is too big. File Max <strong style="font-weight: bold;">10 MB.</strong>
+          </div>
+          <div class="alert alert-danger" *ngIf="msgErrorExtensionFile">
+            <strong style="font-weight: bold;">Error!</strong> Extension File no validate. Attach only <strong style="font-weight: bold;">jpg, jpeg, png, JPG, PNG</strong> files, please.
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <!--h3>Preselected Files</h3-->
+        <table class="table" style="width: 100%; text-align: center">
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Name File</th>
+            <th>Size</th>
+            <th>View</th>
+            <th></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let itemu of archivosTemporales.queue; let a = index">
+
+            <th scope="row">{{ a + 1 }}</th>
+            <td> {{ itemu.some.name }} </td>
+            <td> {{ itemu.file.size /1024 /1024|number: '.2-2'}} MB  </td>
+            <td>
+              <img src="{{muestraImagen(itemu.file.name)}}" style="width: 100px">
+            </td>
+            <td nowrap>
+              <button type="button" class="btn" (click)="dialoQuitarArchivo('quita',a)" >Remove</button>
+            </td>
+          </tr>
+          <tr *ngFor="let item of archivosSubidos; let i = index">
+            <th scope="row">{{ i + 1 }}</th>
+            <td> {{ item.document_name_user }} </td>
+            <td> {{ item.document_size }} </td>
+            <td>
+              <img *ngIf="item.document_status == 1" src="{{{archivo:item.document_name , carpeta:'documentos_vendedor_almacenados', ruta: 'documento/document'} | imagen  }}" style="width: 100px">
+            </td>
+            <td nowrap>
+              <button type="button" class="btn" (click)="cambiaEstado(item._id)" >Remove</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <br>
+        <button (click)="dialoQuitarArchivos()" type="button" class="btn">
+          Remove All Files
+        </button>
+
+      </div>
+    </section>
+    </div>
+    <br>
+    <div>
+      <button *ngIf="usuario !== null" type="button" class="medium" routerLink="/dashboard">RETURN</button>
+      <button type="submit" id="submit" class="{{cambiaClase}}">UPDATE</button>
+    </div>
+  </form>
+  <hr>
+  <!-- ============================================================================================================= -->
+</div>
+<app-footer-register-edit></app-footer-register-edit>
+
+

@@ -1,73 +1,151 @@
 package handlers
 
 import (
-	"net/http"
-	"context"
+"context"
+"net/http"
 
-	"gouland/internal/domain"
-	"gouland/internal/usecase"
+"gouland/internal/domain"
+"gouland/internal/usecase"
 
-	"github.com/gin-gonic/gin"
+"github.com/gin-gonic/gin"
 )
 
-func validateSeller(s *domain.Seller) map[string]string {
-	errs := map[string]string{}
-	if s.Name == "" { errs["name"] = "El nombre es necesario" }
-	if s.Email == "" { errs["email"] = "El correo es necesario" }
-	return errs
-}
-
-// Usuario CRUD via SellerRepo
 func UsuarioListHandler(u usecase.SellerUsecase) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx := context.Background()
-		out, err := u.GetAll(ctx)
-		if err != nil { c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()}); return }
-		c.JSON(http.StatusOK, out)
-	}
+return func(c *gin.Context) {
+out, err := u.GetAll(context.Background())
+if err != nil {
+c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "mensaje": "Error cargar seller", "errors": err.Error()})
+return
+}
+c.JSON(http.StatusOK, gin.H{"ok": true, "usuarios": out})
+}
 }
 
+// GET /usuario/vendedor — idéntico a list
+func UsuarioVendedorHandler(u usecase.SellerUsecase) gin.HandlerFunc {
+return func(c *gin.Context) {
+out, err := u.GetAll(context.Background())
+if err != nil {
+c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "mensaje": "Error cargar seller", "errors": err.Error()})
+return
+}
+c.JSON(http.StatusOK, gin.H{"ok": true, "usuarios": out})
+}
+}
+
+// GET /usuario/seller/:id — busca por campo id (string), igual que Node.js Seller.find({id: id})
+func UsuarioGetBySellerIDHandler(u usecase.SellerUsecase) gin.HandlerFunc {
+return func(c *gin.Context) {
+id := c.Param("id")
+results, err := u.GetBySellerStringID(context.Background(), id)
+if err != nil {
+c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "mensaje": "Error cargar info seller", "errors": err.Error()})
+return
+}
+c.JSON(http.StatusOK, gin.H{"ok": true, "usuario": results})
+}
+}
+
+// GET /usuario/user/:nombre
+func UsuarioGetByNUserHandler(u usecase.SellerUsecase) gin.HandlerFunc {
+return func(c *gin.Context) {
+nombre := c.Param("nombre")
+out, err := u.GetByNUser(context.Background(), nombre)
+if err != nil {
+c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "mensaje": "Error cargar info seller por nombre user", "errors": err.Error()})
+return
+}
+c.JSON(http.StatusOK, gin.H{"ok": true, "usuario": out})
+}
+}
+
+// GET /usuario/company/:nombre
+func UsuarioGetByCompanyHandler(u usecase.SellerUsecase) gin.HandlerFunc {
+return func(c *gin.Context) {
+nombre := c.Param("nombre")
+out, err := u.GetByCompany(context.Background(), nombre)
+if err != nil {
+c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "mensaje": "Error cargar seller by company", "errors": err.Error()})
+return
+}
+c.JSON(http.StatusOK, gin.H{"ok": true, "usuarios": out})
+}
+}
+
+// GET /usuario/:id — busca por email (mailseller) igual que Node.js /:correo
 func UsuarioGetHandler(u usecase.SellerUsecase) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		id := c.Param("id")
-		s, err := u.GetByID(context.Background(), id)
-		if err != nil || s == nil { c.JSON(http.StatusNotFound, gin.H{"error":"not found"}); return }
-		c.JSON(http.StatusOK, s)
-	}
+return func(c *gin.Context) {
+correo := c.Param("id")
+s, err := u.GetByEmail(context.Background(), correo)
+if err != nil || s == nil {
+c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "mensaje": "Error cargar seller", "errors": "not found"})
+return
+}
+c.JSON(http.StatusOK, gin.H{"ok": true, "usuarios": []interface{}{s}})
+}
 }
 
 func UsuarioCreateHandler(u usecase.SellerUsecase) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var payload domain.Seller
-		if err := c.ShouldBindJSON(&payload); err != nil { c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}); return }
-		// validate
-		errs := validateSeller(&payload)
-		if len(errs) > 0 { c.JSON(http.StatusBadRequest, gin.H{"ok": false, "mensaje": "Error al crear seller", "errors": errs}); return }
-		// check unique email
-		if existing, _ := u.GetByEmail(context.Background(), payload.Email); existing != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "mensaje": "El correo ya existe", "errors": map[string]string{"email": "email debe ser unico"}})
-			return
-		}
-		if err := u.Create(context.Background(), &payload); err != nil { c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()}); return }
-		payload.Password = ""
-		c.JSON(http.StatusCreated, payload)
-	}
+return func(c *gin.Context) {
+var payload domain.Seller
+if err := c.ShouldBindJSON(&payload); err != nil {
+c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+return
+}
+errs := validateSeller(&payload)
+if len(errs) > 0 {
+c.JSON(http.StatusBadRequest, gin.H{"ok": false, "mensaje": "Error al crear seller", "errors": errs})
+return
+}
+if existing, _ := u.GetByEmail(context.Background(), payload.MailSeller); existing != nil {
+c.JSON(http.StatusBadRequest, gin.H{"ok": false, "mensaje": "El correo ya existe", "errors": map[string]string{"email": "email debe ser unico"}})
+return
+}
+if err := u.Create(context.Background(), &payload); err != nil {
+c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+return
+}
+payload.Password = ""
+c.JSON(http.StatusCreated, gin.H{"ok": true, "usuario": payload})
+}
 }
 
 func UsuarioUpdateHandler(u usecase.SellerUsecase) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		id := c.Param("id")
-		var payload domain.Seller
-		if err := c.ShouldBindJSON(&payload); err != nil { c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}); return }
-		if err := u.Update(context.Background(), id, &payload); err != nil { c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()}); return }
-		c.JSON(http.StatusOK, gin.H{"status":"updated"})
-	}
+return func(c *gin.Context) {
+id := c.Param("id")
+var payload domain.Seller
+if err := c.ShouldBindJSON(&payload); err != nil {
+c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+return
+}
+if err := u.Update(context.Background(), id, &payload); err != nil {
+c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+return
+}
+payload.Password = ":)"
+c.JSON(http.StatusOK, gin.H{"ok": true, "usuario": payload})
+}
 }
 
 func UsuarioDeleteHandler(u usecase.SellerUsecase) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		id := c.Param("id")
-		if err := u.Delete(context.Background(), id); err != nil { c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()}); return }
-		c.JSON(http.StatusOK, gin.H{"status":"deleted"})
-	}
+return func(c *gin.Context) {
+id := c.Param("id")
+sellerBorrado, err := u.Delete(context.Background(), id)
+if err != nil {
+c.JSON(http.StatusBadRequest, gin.H{"ok": false, "mensaje": "Error al borrar seller", "errors": err.Error()})
+return
+}
+c.JSON(http.StatusOK, gin.H{"ok": true, "usuario": sellerBorrado})
+}
+}
+
+func validateSeller(s *domain.Seller) map[string]string {
+errs := map[string]string{}
+if s.NSeller == "" {
+errs["nseller"] = "El nombre es necesario"
+}
+if s.MailSeller == "" {
+errs["mailseller"] = "El correo es necesario"
+}
+return errs
 }

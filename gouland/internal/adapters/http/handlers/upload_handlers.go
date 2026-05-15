@@ -1,18 +1,19 @@
 package handlers
 
 import (
+"io"
 "net/http"
 "os"
 "path/filepath"
-"time"
-"io"
 "strings"
 
 "github.com/gin-gonic/gin"
 )
 
-// UploadHandler replicates original Node behavior: expects form field named "temporales" and
-// stores files under /opt/doc_temporales or /opt/doc_almacenados depending on filename containing 'file'.
+func UploadGetHandler(c *gin.Context) {
+c.String(http.StatusOK, "file received")
+}
+
 func UploadHandler(c *gin.Context) {
 file, header, err := c.Request.FormFile("temporales")
 if err != nil {

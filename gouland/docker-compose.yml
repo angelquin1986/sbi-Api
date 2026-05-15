@@ -2,23 +2,32 @@ version: "3.8"
 services:
   mongo:
     image: mongo:6
-    ports:
-      - "27017:27017"
     environment:
       - MONGO_INITDB_DATABASE=bookingDB
     volumes:
       - mongo-data:/data/db
+      - ../db_test/bookings:/docker-entrypoint-initdb.d/bookings:ro
+      - ../db_test/init/01-import.sh:/docker-entrypoint-initdb.d/01-import.sh:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   api:
-    build: ./gouland
+    build: .
     ports:
       - "4000:4000"
     environment:
       - MONGODB_URI=mongodb://mongo:27017/bookingDB
       - JWT_SECRET=changeme
     depends_on:
-      - mongo
-    volumes:
-      - ./gouland:/app
-      - mongo-data:/data/db
+      mongo:
+        condition: service_healthy
+  frontend:
+    build: ../front-end-sbi
+    ports:
+      - "4200:4200"
+    depends_on:
+      - api
 volumes:
   mongo-data:

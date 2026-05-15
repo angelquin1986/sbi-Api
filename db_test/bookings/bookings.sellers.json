@@ -1,0 +1,438 @@
+[{
+  "_id": {
+    "$oid": "5bc746312f0f5a0dc9947f61"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "13",
+  "nseller": "Olga Salazar",
+  "nuser": "olga",
+  "mailseller": "olga@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5bc746012f0f5a0dc9947ecb"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "6",
+  "nseller": "Esteban Mancheno",
+  "nuser": "esteban",
+  "mailseller": "esteban@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5bc746152f0f5a0dc9947f0b"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "9",
+  "nseller": "Melissa Montalvo",
+  "nuser": "melissa",
+  "mailseller": "melissa@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5c002db12f0f5a0dc9a00238"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "19",
+  "nseller": "Angela Cevallos",
+  "nuser": "angela",
+  "mailseller": "sales6@royalgalapagos.com",
+  "company": "royal"
+},
+{
+  "_id": {
+    "$oid": "61ccc565e1ac75099700d415"
+  },
+  "role": "OPERACION_ROLE",
+  "id": "28",
+  "nseller": "Veronica Darquea",
+  "nuser": "",
+  "mailseller": "salescontrol@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5bc746212f0f5a0dc9947f35"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "11",
+  "nseller": "Magus Cuisana",
+  "nuser": "magus",
+  "mailseller": "magus@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5c70194ec96797e9adfd24d3"
+  },
+  "role": "OPERACION_ROLE",
+  "id": "24",
+  "nseller": "Alejandro Gutierrez",
+  "mailseller": "alejandro@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5c002ddd2f0f5a0dc9a00249"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "22",
+  "nseller": "Germania Jacome",
+  "nuser": "germania",
+  "mailseller": "germania@royalgalapagos.com",
+  "company": "royal"
+},
+{
+  "_id": {
+    "$oid": "5df79a276a3b9d227019b3a0"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "26",
+  "nseller": "Gabriela Vera",
+  "nuser": "gabrielavera",
+  "mailseller": "gvera@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "64c42d8aa2de8a46f1d6258d"
+  },
+  "role": "OPERACION_ROLE",
+  "id": "34",
+  "nseller": "Jimmy Patiño",
+  "nuser": "jimmy",
+  "mailseller": "ops@galapagosislands.com",
+  "company": "gtc"
+},
+{
+  "_id": {
+    "$oid": "5bc7462b2f0f5a0dc9947f4c"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "12",
+  "nseller": "Lorena Alulema",
+  "nuser": "lorena",
+  "mailseller": "lorena@galapagosislands.com",
+  "company": "gtc"
+},
+{
+  "_id": {
+    "$oid": "5bc7461b2f0f5a0dc9947f20"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "10",
+  "nseller": "Ingrid Vergara",
+  "nuser": "ingrid",
+  "mailseller": "ingrid@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5bc745dc2f0f5a0dc9947e74"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "2",
+  "nseller": "Elizabeth Clavijo",
+  "nuser": "elizabeth",
+  "mailseller": "elizabeth@galapagosislands.com",
+  "company": "gtc"
+},
+{
+  "_id": {
+    "$oid": "5bc7460e2f0f5a0dc9947ef6"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "8",
+  "nseller": "Rosa Mena",
+  "nuser": "rosa",
+  "mailseller": "rmena@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5bc745d12f0f5a0dc9947e5e"
+  },
+  "role": "OPERACION_ROLE",
+  "id": "1",
+  "nseller": "Daniela Paredes",
+  "nuser": "daniela",
+  "mailseller": "dparedes@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5bc745f32f0f5a0dc9947ea0"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "4",
+  "nseller": "Gabriela Aguilar",
+  "nuser": "gabriela",
+  "mailseller": "gaguilar@galapagosislands.com",
+  "company": "gtc"
+},
+{
+  "_id": {
+    "$oid": "61ccc5b8e1ac75099700d43f"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "29",
+  "nseller": "Veronica Darquea",
+  "nuser": "veronica",
+  "mailseller": "vdarquea@galapagosislands.com",
+  "company": "gtc"
+},
+{
+  "_id": {
+    "$oid": "5c002da52f0f5a0dc9a00231"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "18",
+  "nseller": "Carolina Egas",
+  "nuser": "carolina",
+  "mailseller": "sales8@royalgalapagos.com",
+  "company": "royal"
+},
+{
+  "_id": {
+    "$oid": "5bd07e3a2f0f5a0dc9965cf4"
+  },
+  "role": "OPERACION_ROLE",
+  "id": "16",
+  "nseller": "Ana Verdezoto",
+  "nuser": "ana",
+  "mailseller": "averdezoto@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5bc746072f0f5a0dc9947ee0"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "7",
+  "nseller": "Lilian Chafla",
+  "nuser": "lilian",
+  "mailseller": "lilian@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5bc745e82f0f5a0dc9947e8a"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "3",
+  "nseller": "Tamara Gavica",
+  "nuser": "tamara",
+  "mailseller": "tgavica@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5c002d982f0f5a0dc9a0022d"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "17",
+  "nseller": "Edi Toapanta",
+  "nuser": "edi",
+  "mailseller": "edisson@galavail.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5bc745fb2f0f5a0dc9947eb6"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "5",
+  "nseller": "Diana Endara",
+  "nuser": "diana",
+  "mailseller": "diana@galapagosislands.com",
+  "company": "gtc"
+},
+{
+  "_id": {
+    "$oid": "5c755700c96797e9adff44a9"
+  },
+  "role": "OPERACION_ROLE",
+  "id": "25",
+  "nseller": "Maran Rueda",
+  "mailseller": "maran@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "625f0bbc54e48968dca49620"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "32",
+  "nseller": "Sebastián Carvajal",
+  "nuser": "scarvajal",
+  "mailseller": "scarvajal@galapagosislands.com",
+  "company": "gtc"
+},
+{
+  "_id": {
+    "$oid": "5c002dce2f0f5a0dc9a00244"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "21",
+  "nseller": "Lorena Freire",
+  "nuser": "lorenaf",
+  "mailseller": "lorena@royalgalapagos.com",
+  "company": "royal"
+},
+{
+  "_id": {
+    "$oid": "5c002dbd2f0f5a0dc9a0023e"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "20",
+  "nseller": "Patricia Peñafiel",
+  "nuser": "patricia",
+  "mailseller": "ventas1@royalgalapagos.com",
+  "company": "royal"
+},
+{
+  "_id": {
+    "$oid": "61ccc608e1ac75099700d469"
+  },
+  "role": "OPERACION_ROLE",
+  "id": "30",
+  "nseller": "Paulina Herrera",
+  "nuser": "paulina",
+  "mailseller": "rgops1@royalgalapagos.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "64cbd8a86795efe597a21c01"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "35",
+  "nseller": "Andrés Enríquez",
+  "nuser": "andres",
+  "mailseller": "aenriquez@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "6101a551e1ac750997d7bb61"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "27",
+  "nseller": "Fatima Ortiz",
+  "nuser": "fatima",
+  "mailseller": "fatima@galapagosislands.com",
+  "company": "gtc"
+},
+{
+  "_id": {
+    "$oid": "5bc746372f0f5a0dc9947f76"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "14",
+  "nseller": "Daniela Orellana",
+  "nuser": "danielao",
+  "mailseller": "dorellana@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "625f0c0554e48965dca49620"
+  },
+  "role": "OPERACION_ROLE",
+  "id": "33",
+  "nseller": "Soporte Galavail",
+  "nuser": "soporte",
+  "mailseller": "soporte@galavail.com",
+  "company": "gtc"
+},
+{
+  "_id": {
+    "$oid": "625f0b5a54e48967dca49620"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "31",
+  "nseller": "Sandra Revelo",
+  "nuser": "srevelo",
+  "mailseller": "srevelo@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5bc893152f0f5a0dc994c423"
+  },
+  "role": "OPERACION_ROLE",
+  "id": "15",
+  "nseller": "Cristina Marcillo",
+  "nuser": "cristina",
+  "mailseller": "cmarcillo@galapagosislands.com",
+  "company": "INACTIVO"
+},
+{
+  "_id": {
+    "$oid": "5c07ef442f0f5a0dc9a1d928"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "23",
+  "nseller": "Cristina Marcillo Royal",
+  "nuser": "cristinar",
+  "mailseller": "ccmar_@hotmail.com",
+  "company": "royal"
+},
+{
+  "_id": {
+    "$oid": "681ce94191acf475bbd34ab6"
+  },
+  "role": "OPERACION_ROLE",
+  "id": "37",
+  "nseller": "Gabriela Vasquez",
+  "nuser": "gvasquez",
+  "mailseller": "gabriela@royalgalapagos.com",
+  "company": "gtc"
+},
+{
+  "_id": {
+    "$oid": "686c46469269141bd572e386"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "38",
+  "nseller": "Giselle Velasco",
+  "nuser": "giselle",
+  "mailseller": "giselle@galapagosislands.com",
+  "company": "gtc"
+},
+{
+  "_id": {
+    "$oid": "68af5944d495ee087ec8639a"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "39",
+  "nseller": "Katie Beckwith",
+  "nuser": "Katie",
+  "mailseller": "katie@galapagosislands.com",
+  "company": "gtc"
+},
+{
+  "_id": {
+    "$oid": "698ceef4e7b66d2b243a0fe0"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "40",
+  "nseller": "Cristina Pineda",
+  "nuser": "cpineda",
+  "mailseller": "sales10@galapagosislands.com",
+  "company": "gtc"
+},
+{
+  "_id": {
+    "$oid": "699c5fa62009abfcbdb00581"
+  },
+  "role": "VENDEDOR_ROLE",
+  "id": "41",
+  "nseller": "Maxime Sirre",
+  "nuser": "msirre",
+  "mailseller": "sales6@galapagosislands.com",
+  "company": "gtc"
+}]

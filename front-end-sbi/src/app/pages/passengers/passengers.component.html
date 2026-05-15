@@ -1,0 +1,188 @@
+<div class="greyback" xmlns="http://www.w3.org/1999/html">
+  <div class="cells">
+    <table>
+      <tr>
+        <td valign="top"><strong>Sales agent:</strong></td>
+        <td>{{ nameSeller }} (<a href="{{ mailSeller }}">{{ mailSeller }}</a>)</td>
+      </tr>
+      <tr>
+        <td><strong>Contact person:</strong></td>
+        <td>{{ order?.contact_person_name }} (<a href="mailto:{{ order?.contact_person_mail }}">{{ order?.contact_person_mail }}</a>)</td>
+      </tr>
+    </table>
+  </div>
+  <div class="cells">
+    <table>
+      <tr>
+        <td valign="top"><strong>Token #:</strong></td>
+        <td>{{ order?._id }}</td>
+      </tr>
+      <tr>
+        <td><strong>Request date:</strong></td>
+        <td>{{ order?.date_submited | date }}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+<!-- ===================================================================================== -->
+<!-- =============== MOSTRAR LA INFORMACION DE LOS PASAJEROS ======================= -->
+<div *ngFor="let pax of listaPassengers; let i = index" class="pax">
+
+    <h2>Passenger {{ i+1 }}</h2>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>
+            First Name:
+          </td>
+          <td>
+            {{ pax.pax_title }}
+
+          </td>
+          <td>
+            {{ pax.pax_first_name }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>Last name:</td>
+          <td>
+            {{ pax.pax_last_name }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>Nationality:</td>
+          <td>
+            {{ pax.pax_nationality }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>Date of Birth:</td>
+          <td>
+            <span class="traveler-data">
+              {{ pax.pax_date_month }}
+            </span>
+          </td>
+          <td>
+            <span class="traveler-data">
+              {{ pax.pax_date_day }}
+            </span>
+          </td>
+          <td>
+            <span class="traveler-data">
+              {{ pax.pax_date_year }}
+            </span>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>Passport number:</td>
+          <td>
+            {{ pax.pax_passport }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>Passport expiration date:</td>
+          <td>
+            <span class="traveler-data">
+              {{ pax.pax_passport_exp_month }}
+            </span>
+          </td>
+          <td>
+            <span class="traveler-data">
+              {{ pax.pax_passport_exp_day }}
+            </span>
+          </td>
+          <td>
+            <span class="traveler-data">
+              {{ pax.pax_passport_exp_year }}
+            </span>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>Emergency Contact:</td>
+          <td>
+            {{ pax.pax_emergency_contact }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>Blood type:</td>
+          <td>
+            {{ pax.pax_blood_type }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>Travel Insurance Company:</td>
+          <td>
+            {{ pax.pax_insurance_company }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>Travel Insurance Number:</td>
+          <td>
+            {{ pax.pax_insurance_number }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td valign="top">Contact hotel:</td>
+          <td>
+            {{ pax.pax_contact_hotel }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td valign="top">Food restrictions/ allergies:</td>
+          <td>
+            {{ pax.pax_restrictions }}
+          </td>
+        </tr>
+      </table>
+    </div>
+  <div class="linkEdit">
+    <a routerLink="/passenger/{{ pax._id }}">Editar</a>
+  </div>
+
+  <hr>
+</div>
+<!-- ===================================================================================== -->

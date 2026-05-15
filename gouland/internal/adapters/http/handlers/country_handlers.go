@@ -27,17 +27,14 @@ func NewCountryHandler(u usecase.CountryUsecase) *CountryHandler { return &Count
 type CountryHandler struct{ uc usecase.CountryUsecase }
 
 func (h *CountryHandler) Register(rg *gin.RouterGroup) {
+	rg.GET("", h.List)
 	rg.GET("/", h.List)
-	rg.GET("/:id", h.Get)
-	rg.POST("/", h.Create)
-	rg.PUT("/:id", h.Update)
-	rg.DELETE("/:id", h.Delete)
 }
 
 func (h *CountryHandler) List(c *gin.Context) {
 	out, err := h.uc.List(c.Request.Context())
-	if err != nil { c.JSON(500, gin.H{"error": err.Error()}); return }
-	c.JSON(200, out)
+	if err != nil { c.JSON(500, gin.H{"ok": false, "mensaje": "Error cargando paises", "errors": err.Error()}); return }
+	c.JSON(200, gin.H{"ok": true, "paises": out})
 }
 
 func (h *CountryHandler) Get(c *gin.Context) {

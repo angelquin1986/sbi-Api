@@ -1,0 +1,62 @@
+<form [formGroup]="forma" (ngSubmit)="guardarCambios()">
+  <div class="pax">
+    <h2>Billing Address</h2>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>Country:</td>
+          <td><select id="country"
+                      name="country"
+                      formcontrolname="country">
+            <option value="0" selected="selected" disabled>Please select</option>
+            <option value="AF">Afghanistan</option>
+            <option value="AL">Albania</option>
+            <option value="DZ">Algeria</option>
+          </select></td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>Telephone number: <a href="javascript:;" data-fancybox data-type="iframe" data-src="pop-up.html" class="whatsthis">?</a></td>
+          <td><input
+                     type="text"
+                     name="telephone"
+                     id="telephone"
+                      formControlName="telephone">
+          </td>
+        </tr>
+      </table>
+      <div *ngIf="forma.controls['telephone'].errors?.required">Telephone Number is required</div>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>Street address:</td>
+          <td><input
+                     type="text"
+                     name="address"
+                     id="address"
+                    formControlName="address"></td>
+        </tr>
+      </table>
+    </div>
+    <div class="cells">
+      <table>
+        <tr>
+          <td>City, State, Zip code:</td>
+          <td><input
+                     type="text"
+                     name="addressnext"
+                     id="addressnext"
+                      formControlName="addressnext"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <button type="submit"
+          id="submit">SUBMIT</button>
+</form>
+
+{{ forma.valid }}

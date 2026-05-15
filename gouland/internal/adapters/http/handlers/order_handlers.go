@@ -16,11 +16,12 @@ type OrderHandler struct{ uc usecase.OrderUsecase }
 func NewOrderHandler(u usecase.OrderUsecase) *OrderHandler { return &OrderHandler{uc: u} }
 
 func (h *OrderHandler) Register(rg *gin.RouterGroup) {
+	rg.GET("", h.List)
 	rg.GET("/", h.List)
 	rg.GET("/:id", h.Get)
+	rg.POST("", h.Create)
 	rg.POST("/", h.Create)
 	rg.PUT("/:id", h.Update)
-	rg.DELETE("/:id", h.Delete)
 }
 
 func (h *OrderHandler) List(c *gin.Context) {
@@ -48,8 +49,9 @@ func (h *OrderHandler) Update(c *gin.Context) {
 	id := c.Param("id")
 	var payload domain.Order
 	if err := c.ShouldBindJSON(&payload); err != nil { c.JSON(http.StatusBadRequest, gin.H{"ok": false, "mensaje": "Error al actualizar order", "errors": err.Error()}); return }
-	if err := h.uc.Update(context.Background(), id, &payload); err != nil { c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "mensaje": "Error al actualizar order", "errors": err.Error()}); return }
-	c.JSON(http.StatusOK, gin.H{"ok": true, "order": payload})
+	saved, err := h.uc.Update(context.Background(), id, &payload)
+	if err != nil { c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "mensaje": "Error al actualizar order", "errors": err.Error()}); return }
+	c.JSON(http.StatusOK, gin.H{"ok": true, "order": saved})
 }
 
 func (h *OrderHandler) Delete(c *gin.Context) {
