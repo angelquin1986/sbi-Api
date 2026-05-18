@@ -2,7 +2,7 @@
 
 **Proyecto:** Galápagos Travel Center (GTC)
 **Proceso:** Gestión de disponibilidad y bloqueos de cabinas de cruceros
-**Versión:** 3.0 — Verificada contra código fuente real
+**Versión:** 4.0 — Verificada contra código fuente Java (back-end) y JSF/PrimeFaces (front-end)
 **Audiencia:** Dueño del proceso / Operaciones
 
 ---
@@ -64,10 +64,16 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    LO QUE VE EL USUARIO EN PANTALLA                 │
 │                                                                     │
-│  On Hold      → Cabina bloqueada para la agencia                    │
-│  Pending      → En lista de espera                                  │
-│  Confirmed    → Venta confirmada                                    │
-│  Cancelled    → Cancelado (varias combinaciones internas posibles)  │
+│  On Hold             → Cabina bloqueada para la agencia             │
+│  Pending             → En lista de espera                           │
+│  In Process          → Bloqueo en proceso de confirmación           │
+│  Time Limit          → Bloqueo próximo a vencer                     │
+│  Confirmed           → Venta confirmada                             │
+│  Confirmed Pending   → Confirmado pero sin completar datos          │
+│  Cancel Confirmation → Confirmación cancelada (aún sin liberar)     │
+│  Expired / Caducado  → Liberado automáticamente por vencimiento     │
+│  Grouped / Agrupado  → Pedidos del mismo grupo                      │
+│  Cancelled           → Cancelado (varias combinaciones internas)    │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -212,6 +218,48 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
   1683 = No desea boleto aéreo
          └─ Genera cargo extra de $50/pax
 ```
+
+### 7.1 Asistente de confirmación (4 pasos)
+
+Después de iniciar la confirmación, el operador completa los datos en 4 pasos en pantalla:
+
+```
+┌──────────┐    ┌───────────────┐    ┌──────────────┐    ┌──────────┐
+│  Paso 1  │───►│    Paso 2     │───►│    Paso 3    │───►│  Paso 4  │
+│Pasajeros │    │  Servicios    │    │    Vuelos    │    │ Resumen  │
+│          │    │ Adicionales   │    │  (Boletos)   │    │ Final    │
+└──────────┘    └───────────────┘    └──────────────┘    └──────────┘
+```
+
+**Paso 1 — Datos de pasajeros:**
+- Nombre, apellido, género, estado civil
+- Fecha de nacimiento, nacionalidad
+- Número de pasaporte
+- Observaciones especiales
+- *Validaciones:* edad vs tipo de pasajero (adulto/niño), formato pasaporte
+- *Restricción:* edición bloqueada si ya se emitieron boletos o tras ventana de edición
+
+**Paso 2 — Servicios adicionales:**
+- Selección de servicios disponibles por pasajero
+- Fechas de servicio, tipo (sí/no/gratuito)
+- *Regla:* si se cambia nacionalidad o edad → servicios se eliminan automáticamente
+
+**Paso 3 — Boletos aéreos:**
+```
+  Opciones por pasajero:
+  ├─ Sin boleto              → cargo $50/pax
+  ├─ Fechas del crucero      → mismo itinerario
+  ├─ Fechas fuera del crucero→ fechas libres
+  ├─ Solo ida                → one-way
+  └─ Ida y vuelta            → roundtrip
+```
+- *Restricción:* edición bloqueada si boleto ya fue emitido
+- *Regla:* si se cambia nombre/pasaporte/edad → boletos se recalculan automáticamente
+
+**Paso 4 — Resumen final:**
+- Totales de alojamiento y extras
+- Visibilidad de cargos por cancelación
+- Acceso a voucher, proforma, factura
 
 ---
 
@@ -442,31 +490,35 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
 
 ## 15. Notificaciones del sistema
 
-| Evento                        | Destinatarios           | Qué se envía                                       |
-|-------------------------------|-------------------------|----------------------------------------------------|
-| ON HOLD creado                | Agencia + Operador      | Confirmación con fecha vencimiento                 |
-| WL creada                     | Agencia + Operador      | Confirmación ingreso a lista de espera             |
-| WL eliminada manualmente      | Agencia                 | Notificación de baja de lista de espera            |
-| Vencimiento próximo (1ra vez) | Agencia                 | Recordatorio: pedido próximo a vencer              |
-| Vencimiento próximo (2da vez) | Agencia                 | Último aviso de vencimiento                        |
-| Confirmación de venta         | Agencia + Operador      | Detalle de la confirmación con cabinas             |
-| Liberación / Cancelación      | Agencia                 | Notificación de cancelación                        |
-| Extensión aprobada            | Agencia                 | Confirmación de nueva fecha de vencimiento         |
+| Evento                          | Destinatarios           | Qué se envía                                       |
+|---------------------------------|-------------------------|----------------------------------------------------|
+| ON HOLD creado                  | Agencia + Operador      | Confirmación con fecha vencimiento                 |
+| WL creada                       | Agencia + Operador      | Confirmación ingreso a lista de espera             |
+| WL eliminada manualmente        | Agencia                 | Notificación de baja de lista de espera            |
+| Vencimiento próximo (1ra vez)   | Agencia                 | Recordatorio: pedido próximo a vencer              |
+| Vencimiento próximo (2da vez)   | Agencia                 | Último aviso de vencimiento                        |
+| Confirmación de venta           | Agencia + Operador      | Detalle de la confirmación con cabinas             |
+| Liberación / Cancelación manual | Agencia                 | Notificación de cancelación                        |
+| Cancelación automática (timer)  | Agencia                 | Notificación separada de expiración automática     |
+| Extensión aprobada              | Agencia                 | Confirmación de nueva fecha de vencimiento         |
 
 ---
 
 ## 16. Funciones adicionales del operador
 
-| Función                     | Descripción                                                                    |
-|-----------------------------|--------------------------------------------------------------------------------|
-| **Abrir/Cerrar cabina**     | Bloquea espacios por mantenimiento. Al abrir, libera los espacios              |
-| **Abrir/Cerrar itinerario** | Hace visible o invisible el itinerario para agencias                           |
-| **Intercambiar cabinas**    | Mueve pasajeros de una cabina a otra dentro del mismo itinerario               |
-| **Reasignar espacios**      | Redistribuye espacios entre pedidos del mismo grupo                            |
-| **Ver disponibilidad**      | Estado en tiempo real de todas las cabinas del itinerario                      |
-| **Ver lista de espera**     | Agencias en espera por itinerario con detalle de solicitud                     |
-| **Gestionar tarifas**       | Actualizar tarifas y promociones por cabina e itinerario                       |
-| **Reportes**                | Grupos, actividad, extensiones, cancelaciones, dashboard                       |
+| Función                        | Descripción                                                                    |
+|--------------------------------|--------------------------------------------------------------------------------|
+| **Abrir/Cerrar cabina**        | Bloquea espacios por mantenimiento. Al abrir, libera los espacios              |
+| **Abrir/Cerrar itinerario**    | Hace visible o invisible el itinerario para agencias                           |
+| **Intercambiar cabinas**       | Mueve pasajeros de una cabina a otra dentro del mismo itinerario               |
+| **Reasignar espacios**         | Redistribuye espacios entre pedidos del mismo grupo                            |
+| **Ver disponibilidad**         | Estado en tiempo real de todas las cabinas del itinerario                      |
+| **Ver lista de espera**        | Agencias en espera por itinerario con detalle de solicitud                     |
+| **Gestionar tarifas/promos**   | Actualizar tarifas y promociones por cabina e itinerario                       |
+| **Ver disponibilidad API**     | Consultar disponibilidad de proveedores externos (Goware, Andando Tours, etc.) |
+| **Actividad / Historial**      | Búsqueda filtrada por estado: bloqueados, en proceso, lista de espera, confirmados, expirados, agrupados |
+| **Dashboard operativo**        | Panel de alertas: bloqueos próximos a vencer, confirmaciones incompletas, facturas pendientes |
+| **Exportar reportes**          | XLS de reservas, manifiestos de pasajeros por itinerario                       |
 
 ---
 
@@ -477,4 +529,56 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
 - Tarifas finales al confirmar (stored procedure `calcular_tarifa_grupo_promocion_galavail2`)
 - Totales del pedido/grupo tras cada cambio de pasajero o servicio
 - Cargos adicionales: sin boleto aéreo ($50/pax), servicios adicionales, extras de cancelación
+
+---
+
+## 18. Control de acceso por rol
+
+El sistema controla qué acciones puede realizar cada tipo de usuario mediante permisos configurables:
+
+| Permiso                          | Descripción                                         |
+|----------------------------------|-----------------------------------------------------|
+| `place_on_hold`                  | Crear bloqueos ON HOLD                              |
+| `waiting_list`                   | Ver y gestionar lista de espera                     |
+| `close_open_itinerario`          | Abrir o cerrar un itinerario                        |
+| `close_open_cabina`              | Abrir o cerrar una cabina (mantenimiento)           |
+| `reasignacion_act`               | Reasignar espacios entre pedidos                    |
+| `voucher_cabina`                 | Generar y ver voucher de cabina                     |
+| `mostrar_disponibilidad_api_rest`| Consultar disponibilidad de proveedores externos    |
+
+> Los roles se configuran en la plataforma y pueden asignarse individualmente a cada usuario.
+
+---
+
+## 19. Documentos generados
+
+El sistema genera documentos de soporte para cada reserva confirmada:
+
+| Documento      | Cuándo se genera                    | Para quién   |
+|----------------|-------------------------------------|--------------|
+| **Voucher**    | Al confirmar el bloqueo/reserva     | Agencia      |
+| **Proforma**   | Al confirmar, antes de pago final   | Agencia      |
+| **Factura**    | Al completar el proceso de pago     | Agencia      |
+| **Manifiesto** | Exportación por itinerario          | Operaciones  |
+| **Reporte XLS**| Bajo demanda desde pantalla Actividad| Supervisión |
+
+---
+
+## 20. Diferencias FIT vs Charter
+
+| Aspecto                     | Modo FIT                              | Modo Charter                              |
+|-----------------------------|---------------------------------------|-------------------------------------------|
+| **Tipo de reserva**         | Individual por pasajero               | Grupo grande o barco completo             |
+| **Validación de edad**      | Reglas estándar adulto/niño           | Reglas más estrictas por contrato         |
+| **Selección de ocupación**  | Libre                                 | Requiere ocupación específica del contrato|
+| **Código de grupo**         | Primer pedido define el grupo         | Mismo comportamiento                      |
+| **Capacidad**               | Validación normal PAX vs cabina       | Validación más estricta                   |
+
+---
+
+## 21. Sesión y seguridad
+
+- **Tiempo de sesión:** 120 minutos de inactividad → cierre automático
+- **Idioma:** interfaz disponible en español e inglés
+- **Accesos diferenciados:** panel de administración (`/web/management/`) separado del panel de agencia (`/web/agent/`)
 
