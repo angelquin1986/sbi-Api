@@ -127,6 +127,11 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
 - Si `total pax > itinerario.disponibles` → error: *"You have reached the maximum number of passengers for this boat"*
 - La fecha de vencimiento se ajusta: sábado → +2880 min, domingo → +1440 min
 - El primer pedido del grupo define el `codigo_grupo`; los siguientes lo heredan
+- La referencia del pedido **no puede contener "/"** y tiene máximo **25 caracteres**
+- **Regla soloGrupo:** si el itinerario es de tipo grupo y es el primer bloqueo, los espacios seleccionados deben ser `>= mínimo del grupo` (`minSoloGrupo`)
+- **Regla soloCharter:** si el itinerario es charter, los espacios seleccionados deben cubrir toda la capacidad del barco
+- **Cabina compartida:** si ya existe un bloqueo con `compartida = false`, no se puede agregar otro pasajero → modal de error
+- **Triple cabina:** si una cabina compartida tiene capacidad > 2 y queda 1 espacio libre tras el bloqueo, el sistema cierra automáticamente ese espacio restante por mantenimiento
 
 ---
 
@@ -175,6 +180,8 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
 - Al convertir WL a ON HOLD, los bloqueos en espera de las cabinas se eliminan
 - El código del WL queda registrado en el nuevo pedido (`codigowl`)
 - Para eliminar WL manualmente: `estadoPedido = 3`, `estado = inactivo`
+- La referencia del WL **no puede contener "/"** (validación en servidor, máx 25 caracteres)
+- Al crear WL se requiere **mínimo 1 adulto**; niños puede ser 0
 
 ---
 
@@ -340,34 +347,34 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
 **El sistema ejecuta este proceso cada 3 minutos:**
 
 ```
-┌────────────────────────────────────────────────────────┐
-│  TIMER (cada 3 minutos)                                │
-│                                                        │
-│  Tarea A: Pedidos ON HOLD vencidos                     │
-│  ──────────────────────────────────                    │
-│  1. SP: timer_buscar_pedidos_caducados_notificados     │
-│  2. Por cada pedido vencido:                           │
-│     SP: timer_eliminar_pedido_caducado(pedido, false)  │
-│  3. Recalcula contadores del itinerario                │
-│                                                        │
-│  Tarea B: Pedidos ON HOLD vencidos con WL              │
-│  ──────────────────────────────────────────            │
-│  1. SP: timer_buscar_pedidos_caducados_notificados_wl  │
-│  2. Por cada pedido:                                   │
-│     SP: timer_eliminar_pedido_caducado(pedido, true)   │
-│  3. Recalcula contadores del itinerario                │
-│                                                        │
-│  Tarea C: Pedidos WL vencidos                          │
-│  ───────────────────────────                           │
-│  1. SP: timer_eliminar_pedidos_pendientes              │
-│  2. Recalcula contadores del itinerario                │
-│                                                        │
-│  Tarea D: Color de cabinas (cada 5 min)                │
-│  ──────────────────────────────────────                │
-│  1. SP: timer_buscar_pedidos_eliminados                │
-│  2. SP: timer_actualizar_color_cabina(pedido)          │
-│  3. Recalcula contadores                               │
-└────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│  TIMER A — PedidoCaducadoTimer (cada 3 minutos)          │
+│  Pedidos ON HOLD vencidos (sin WL en espera)             │
+│  ────────────────────────────────────────────            │
+│  1. SP: timer_buscar_pedidos_caducados_notificados        │
+│  2. Por cada pedido vencido:                              │
+│     SP: timer_eliminar_pedido_caducado(pedido, false)     │
+│  3. Recalcula contadores + cabinas menores del itinerario │
+│                                                          │
+│  TIMER B — PedidoCaducadoWLTimer (cada 3 minutos)        │
+│  Pedidos ON HOLD vencidos con lista de espera activa     │
+│  ────────────────────────────────────────────────────    │
+│  1. SP: timer_buscar_pedidos_caducados_notificados_wl     │
+│  2. Por cada pedido:                                      │
+│     SP: timer_eliminar_pedido_caducado(pedido, true)      │
+│  3. Recalcula contadores + cabinas menores del itinerario │
+│                                                          │
+│  Tarea C: Pedidos WL vencidos (Timer A o B)              │
+│  ───────────────────────────                             │
+│  1. SP: timer_eliminar_pedidos_pendientes                 │
+│  2. Recalcula contadores del itinerario                   │
+│                                                          │
+│  Tarea D: Color de cabinas (cada 5 min)                  │
+│  ──────────────────────────────────────                  │
+│  1. SP: timer_buscar_pedidos_eliminados                   │
+│  2. SP: timer_actualizar_color_cabina(pedido)             │
+│  3. Recalcula contadores                                  │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -384,16 +391,35 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
      │                              │◄─── Ve solicitudes ───────│
      │                              │     pendientes             │
      │                              │                           │
-     │                              │── Aprueba días/horas ────►│
+     │                    ┌─────────┴──────────┐               │
+     │                    │  Aprueba o rechaza  │               │
+     │                    └─────────┬──────────┘               │
      │                              │                           │
-     │                              │                    fechaCaduca +=
-     │                              │                    (dias×1440 + horas×60) min
-     │                              │                    nroExtensiones++
-     │                              │                    Registra fechaExtensionInicial
-     │◄── Mail extensión ───────────────────────────────────────│
+     │                    ┌─────────▼──────────┐               │
+     │                    │    ¿APRUEBA?        │               │
+     │                    └─────────┬──────────┘               │
+     │            SÍ ───────────────┤──── NO ──────────────────│
+     │             │                                            │
+     │             │                                    estadoSolicitud = RECHAZADO
+     │             │                                    Notificación de rechazo
+     │             │                                            │
+     │             ├─► fechaCaduca += (dias×1440 + horas×60) min
+     │             │   nroExtensiones++                        │
+     │             │   Registra fechaExtensionInicial           │
+     │◄── Mail extensión aprobada ──────────────────────────────│
 ```
 
-**Regla verificada:** Solo se puede extender si el pedido todavía no ha vencido.
+**Restricciones del formulario de extensión:**
+- Días: mínimo 0, **máximo 8**
+- Horas: mínimo 0, **máximo 8**
+- Ambos campos son requeridos
+
+**Reglas verificadas:**
+- Solo se puede extender si el pedido todavía **no ha vencido**
+- Al aprobar: `estadoSolicitud = APROBADO`, `notificado = INACTIVO`, se envía mail
+- Al rechazar: `estadoSolicitud = RECHAZADO`, `notificado = INACTIVO`, se envía notificación de rechazo
+- El contador `nroExtensiones` se incrementa solo en aprobación
+- La fecha de la primera extensión (`fechaExtensionInicial`) se registra solo la primera vez
 
 ---
 
@@ -479,12 +505,18 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
 | R10 | Pasajero sin boleto aéreo = cargo de **$50** por pasajero (*"Penalty fee for the Galapagos air tickets"*)      |
 | R11 | La extensión de plazo suma días×1440 + horas×60 minutos a la fecha actual de vencimiento                      |
 | R12 | Se registra número de extensiones (`nroExtensiones`) y fecha de la primera extensión                          |
-| R13 | El timer de expiración corre **cada 3 minutos** y usa stored procedures en base de datos                       |
+| R13 | El timer de expiración corre **cada 3 minutos**, son **2 timers separados**: uno para holds normales y otro para holds con lista de espera |
 | R14 | Un pedido puede incluir múltiples cabinas del mismo itinerario (forman un grupo)                               |
 | R15 | El código del grupo es el código del **primer pedido** creado; los siguientes lo heredan                       |
 | R16 | Al liberar, se registra en el pedido: `"[usuario] HD RELEASED"` con fecha                                     |
 | R17 | Si se modifica nacionalidad o edad de un pasajero, sus servicios adicionales se eliminan automáticamente       |
 | R18 | Si se modifica nombre, pasaporte o edad, se recalculan los boletos aéreos automáticamente                      |
+| R19 | La referencia del pedido (hold y WL) **no puede contener "/"** y tiene máximo **25 caracteres**                |
+| R20 | **Itinerario soloGrupo:** el primer bloqueo debe cubrir al menos el mínimo de espacios del grupo               |
+| R21 | **Itinerario soloCharter:** el bloqueo debe cubrir la capacidad completa del barco                             |
+| R22 | **Cabina triple compartida:** si tras bloquear queda exactamente 1 espacio libre en una cabina capacidad>2, el sistema lo cierra automáticamente por mantenimiento |
+| R23 | La extensión tiene límite: **máximo 8 días y 8 horas**. El operador puede también **rechazar** la solicitud    |
+| R24 | La **agencia** no tiene acceso a mantenimiento de cabina, apertura/cierre de itinerario ni reasignación — esas funciones son exclusivas del operador |
 
 ---
 
