@@ -614,3 +614,333 @@ El sistema genera documentos de soporte para cada reserva confirmada:
 - **Idioma:** interfaz disponible en español e inglés
 - **Accesos diferenciados:** panel de administración (`/web/management/`) separado del panel de agencia (`/web/agent/`)
 
+
+---
+
+## 22. Ejemplos prácticos por caso de uso
+
+> Casos reales, cortos y didácticos para entender el comportamiento del sistema.
+
+---
+
+### 🟢 Caso 1 — Bloqueo directo exitoso
+
+**Situación:** La agencia "Galápagos Tours" quiere bloquear la cabina doble del barco "Evolution" para la salida del 10 de junio.
+
+```
+Barco:      Evolution
+Itinerario: 10 jun – 17 jun
+Cabina:     Doble (capacidad 2)
+Ocupada:    0 pax actualmente
+Solicitud:  2 adultos
+
+✅ Validación pasa:
+   - 2 adultos + 0 existentes = 2 < capacidad 2 → OK
+   - Total barco: 12 pax disponibles, se usan 2 → OK
+   - Cuota mensual agencia: 5 bloqueos restantes → OK
+
+Resultado:
+   - Pedido creado: estado ON HOLD (167)
+   - Vence: miércoles 12 jun 18:00 (según parámetro empresa)
+   - Bloqueos secundarios (177) creados en cabinas de
+     itinerarios del mismo barco que se solapan en fechas
+   - Mail enviado a agencia y operador
+```
+
+---
+
+### 🔴 Caso 2 — Bloqueo rechazado por cabina llena
+
+**Situación:** Otra agencia intenta bloquear la misma cabina doble del Caso 1.
+
+```
+Cabina:     Doble (capacidad 2)
+Ocupada:    2 pax (bloqueo de Galápagos Tours)
+Solicitud:  1 adulto
+
+❌ Validación falla:
+   - 1 nuevo + 2 existentes = 3 >= capacidad 2
+
+Resultado:
+   - Error: "This cabin has no spaces available"
+   - No se crea pedido
+```
+
+---
+
+### 🟡 Caso 3 — Lista de espera (sin disponibilidad)
+
+**Situación:** Todas las cabinas del itinerario están bloqueadas (ON HOLD), pero la agencia "Natura" quiere entrar.
+
+```
+Barco:      Evolution
+Itinerario: 10 jun – 17 jun
+Disponibles: 0  (todas ocupadas con ON HOLD)
+ON HOLD activos: SÍ
+
+La agencia solicita bloqueo → sistema detecta 0 disponibles
+→ Ofrece entrar a lista de espera
+
+Solicitud WL: 2 adultos, referencia "NAT-001"
+
+Resultado:
+   - Pedido creado: tipo WL (estadoPedido=2), estado PENDING
+   - Contador WL del itinerario: +1
+   - Mail enviado a agencia (WL confirmada) y operador (alerta)
+   - Agencia espera a que algún ON HOLD se libere o venza
+```
+
+---
+
+### ⚫ Caso 4 — Lista de espera rechazada (sin holds activos)
+
+**Situación:** El itinerario está disponible (no hay holds), la agencia solicita WL por error.
+
+```
+Disponibles: 0
+ON HOLD activos: 0 (itinerario lleno de confirmados)
+
+❌ No aplica WL:
+   - Sin ON HOLD no hay expectativa de liberación
+
+Resultado:
+   - El sistema no permite crear WL
+   - La agencia debe esperar a que se abra disponibilidad
+```
+
+---
+
+### 🔵 Caso 5 — Conversión de WL a ON HOLD
+
+**Situación:** El bloqueo de "Galápagos Tours" (Caso 1) vence. La agencia "Natura" estaba en WL.
+
+```
+Evento:     Timer libera pedido de Galápagos Tours
+            → cabina queda disponible
+            → operador ve lista de espera
+
+Operador asigna cabina a "Natura":
+   - WL antiguo: estado → INACTIVO
+     dadoBajaUsuario = "SE CONVIERTE A PEDIDO"
+   - Nuevo pedido ON HOLD creado para "Natura"
+   - Hereda fecha vencimiento del WL original
+   - Contador WL: -1
+
+Resultado:
+   - Agencia "Natura": ahora en ON HOLD ✅
+   - Mail de confirmación ON HOLD enviado
+```
+
+---
+
+### ✅ Caso 6 — Confirmación de venta
+
+**Situación:** "Natura" (ahora en ON HOLD) confirma la compra.
+
+```
+Pedido:     ON HOLD, 2 adultos
+Operador:   indica que ambos desean boleto aéreo
+
+Sistema:
+   - BloqueoEspacios: 167 → 185 (CONFIRMED)
+   - Secundarios: 177 → 274
+   - Crea 2 PedidoPasajero vacíos (se completan después)
+   - Calcula tarifas finales
+   - Registra fechaConfirmacion
+
+Resultado:
+   - Pedido en estado CONFIRMED ✅
+   - Mail de confirmación enviado
+```
+
+---
+
+### ✅ Caso 7 — Confirmación con penalidad por sin boleto
+
+**Situación:** Al confirmar, 1 de los 2 pasajeros no quiere boleto aéreo.
+
+```
+Pasajero 1: desea boleto    → sin cargo extra
+Pasajero 2: NO desea boleto → cargo $50
+
+Sistema agrega:
+   Extra: "Penalty fee for the Galapagos air tickets not-issued"
+   Monto: $50 × 1 pasajero = $50
+
+Resultado:
+   - Pedido confirmado ✅ con cargo adicional de $50
+```
+
+---
+
+### 🔓 Caso 8 — Liberación de bloqueo (Hold Release)
+
+**Situación:** "Galápagos Tours" decide no confirmar y libera el bloqueo antes de que venza.
+
+```
+Pedido:     ON HOLD (167)
+Acción:     Agencia o Operador solicita liberar
+
+Sistema:
+   - BloqueoEspacios: 167 → 2583 (HOLD RELEASED)
+   - Secundarios: 177 → 2584
+   - Registra: dadoBajaUsuario = "galturops HD RELEASED"
+   - Modo del grupo → FIT (160)
+
+Resultado:
+   - Cabina vuelve a estar DISPONIBLE ✅
+   - Mail de cancelación enviado
+```
+
+---
+
+### ❌ Caso 9 — Cancelación de venta confirmada
+
+**Situación:** La agencia ya confirmó pero debe cancelar (pasajeros no viajan).
+
+```
+Pedido:     CONFIRMED (185)
+Acción:     Operador cancela
+
+Sistema:
+   - BloqueoEspacios: 185 → 1777 (CANCELLED, CONFIRMED)
+   - Secundarios: 274 → 1778
+   - Inactiva PedidoPasajero de todos los pasajeros
+   - Inactiva extras (excepto cargos tipo 1780 por cancelación)
+   - Registra fecha y usuario que canceló
+
+Resultado:
+   - Pedido en estado CANCELLED, CONFIRMED ✅
+   - La cabina puede reasignarse
+```
+
+---
+
+### 🔧 Caso 10 — Mantenimiento de cabina
+
+**Situación:** El operador necesita cerrar la cabina Suite del barco por reparación.
+
+```
+Cabina:     Suite (capacidad 2)
+Acción:     Operador selecciona cabina → "Cerrar cabina"
+
+Sistema crea pedido especial:
+   - referencia = "MANTENIMIENTO"
+   - adultos = 0, ninos = 0
+   - estado ON HOLD tipo MANTENIMIENTO (168)
+   - Secundarios (303) en itinerarios solapados
+
+Resultado:
+   - Cabina NO aparece como disponible para agencias ✅
+
+Cuando se repara:
+   Operador → "Abrir cabina"
+   Sistema inactiva BloqueoEspacios de mantenimiento
+   → Cabina vuelve a estar DISPONIBLE
+```
+
+---
+
+### ⏳ Caso 11 — Vencimiento automático
+
+**Situación:** "Galápagos Tours" no libera ni confirma. El plazo vence.
+
+```
+Fecha vencimiento:  martes 11 jun 18:00
+Timer (3 min):      detecta pedido vencido a las 18:03
+
+Timer A ejecuta:
+   SP: timer_eliminar_pedido_caducado(pedido, false)
+   - Inactiva pedido y bloqueos
+   - Recalcula contadores del itinerario
+
+Resultado:
+   - Cabina DISPONIBLE nuevamente ✅
+   - Si había WL → Timer B notifica al operador
+   - Mail de cancelación automática enviado a agencia
+```
+
+---
+
+### 📅 Caso 12 — Extensión aprobada
+
+**Situación:** "Galápagos Tours" necesita 2 días más para confirmar.
+
+```
+Pedido:     ON HOLD, vence el 11 jun 18:00
+Solicitud:  2 días, 0 horas
+
+Operador revisa y aprueba:
+   fechaCaduca += (2×1440 + 0×60) = +2880 minutos
+   Nueva fecha: 13 jun 18:00
+   nroExtensiones = 1
+   fechaExtensionInicial = 11 jun 18:00
+
+Resultado:
+   - Nuevo vencimiento: 13 jun 18:00 ✅
+   - Mail de extensión aprobada enviado
+```
+
+---
+
+### 🚫 Caso 13 — Extensión rechazada
+
+**Situación:** El operador no aprueba la extensión porque hay WL esperando.
+
+```
+Solicitud:  3 días de extensión
+Operador:   Rechaza
+
+Sistema:
+   estadoSolicitud = RECHAZADO
+   Mail de rechazo enviado a agencia
+
+Resultado:
+   - Pedido mantiene fecha original ✅
+   - Al vencer, timer lo elimina automáticamente
+```
+
+---
+
+### 🔄 Caso 14 — Reasignación de cabina
+
+**Situación:** Una familia de 4 confirmada en dos cabinas dobles quiere moverse a una suite cuádruple.
+
+```
+Pedido confirmado: 2 cabinas dobles (4 pax total)
+Cabina disponible: Suite (capacidad 4)
+
+Operador ingresa código de factura → busca pedido
+Sistema valida:
+   - Espacios ocupados (4) <= espacios libres en Suite (4) ✅
+   - Observación de reasignación: requerida
+
+Sistema ejecuta:
+   - Elimina BloqueoEspacios de las 2 dobles
+   - Crea BloqueoEspacios en Suite
+   - Recalcula tarifa del grupo
+   - Envía mail de reasignación
+
+Resultado:
+   - 4 pax ahora en Suite ✅
+```
+
+---
+
+### 🚢 Caso 15 — Charter (barco completo)
+
+**Situación:** Una empresa quiere reservar el barco completo (15 pax).
+
+```
+Barco:      Santa Cruz II (capacidad 15 pax)
+Tipo:       soloCharter
+
+Agencia selecciona todas las cabinas:
+   - Sistema valida: espacios seleccionados >= capacidad barco (15)
+   - Si selecciona menos de 15 → error, no se puede bloquear parcialmente
+
+Resultado:
+   - Bloqueo de todo el barco en ON HOLD ✅
+   - Sin bloqueos secundarios (no hay cabinas libres en el barco)
+```
+
