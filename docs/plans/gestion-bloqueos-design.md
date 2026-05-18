@@ -1,317 +1,246 @@
-# MS Gestión de Bloqueos de Cabinas — Diseño
+# Gestión de Bloqueos de Cabinas — Documento Funcional
 
-**Fecha:** 2026-05-18  
-**Versión:** 1.0  
-**Stack:** Go 1.20 · Gin · MongoDB · Arquitectura Hexagonal  
-**Contexto:** Sistema de bloqueos para Galápagos Travel Center (GTC). Gestiona la disponibilidad de cabinas de cruceros entre el operador (Royal/GTC) y agencias de viaje.
-
----
-
-## 1. Contexto y Problema
-
-Los cruceros en Galápagos operan con barcos que tienen un inventario fijo de cabinas. Por cada salida (viaje específico del barco), las agencias de viaje pueden bloquear cabinas temporalmente para sus clientes. El sistema debe garantizar que:
-
-- No se puedan bloquear ni reservar cabinas ya ocupadas o bloqueadas.
-- Cuando no hay disponibilidad directa, las agencias puedan entrar en lista de espera.
-- El estado de cada booking refleje fielmente la combinación de estados de sus cabinas.
-- Exista trazabilidad completa de cada cambio de estado.
+**Proyecto:** Galápagos Travel Center (GTC)  
+**Proceso:** Gestión de disponibilidad y bloqueos de cabinas de cruceros  
+**Versión:** 2.0 (revisada con análisis del sistema existente)  
+**Audiencia:** Dueño del proceso / Operaciones
 
 ---
 
-## 2. Flujo de Negocio
+## ¿De qué trata este proceso?
 
-### Caso A — Disponibilidad directa (cabinas DISPONIBLE)
-
-```
-Agencia solicita bloqueo
-        │
-        ▼
-Sistema verifica disponibilidad en la salida
-        │
-   Hay DISPONIBLES
-        │
-        ▼
-Operador bloquea N cabinas → estado booking: ON HOLD
-        │
-   ┌────┼──────────────┐
-   │    │              │
-8 días  confirma    libera/cancela
-expira  │              │
-   │    ▼              ▼
-   │  CONFIRMED   HOLD RELEASED
-   ▼              (cabinas → DISPONIBLE)
-HOLD RELEASED
-(cabinas → DISPONIBLE)
-```
-
-### Caso B — Sin disponibilidad directa (todas bloqueadas o confirmadas)
-
-```
-Agencia solicita bloqueo
-        │
-        ▼
-Sistema verifica: no hay DISPONIBLE pero hay ON HOLD
-        │
-        ▼
-Solicitud queda en PENDING (lista de espera, sin expiración)
-        │
-   Algún ON HOLD se libera (Hold Released)
-        │
-        ▼
-Operador ve lista de espera y asigna manualmente
-        │
-        ▼
-Estado booking pasa a ON HOLD → flujo normal (Caso A)
-```
-
-### Caso C — Sin disponibilidad ni bloqueos
-
-```
-No hay DISPONIBLE ni ON HOLD → solicitud RECHAZADA
-```
-
-### Estados compuestos al cancelar/liberar cabinas individuales
-
-```
-CONFIRMED
-  ├─ cancela algunas cabinas         → CANCELLED, CONFIRMED
-  │    └─ libera sus holds           → CANCELLED, CONFIRMED, HOLD RELEASED
-  └─ libera holds de confirmadas     → CONFIRMED, HOLD RELEASED
-```
+El sistema permite que las agencias de viaje reserven (bloqueen) temporalmente cabinas en cruceros de Galápagos. El operador (Royal/GTC) administra esas solicitudes, confirma ventas, libera espacios y gestiona listas de espera cuando un barco está lleno.
 
 ---
 
-## 3. Máquina de Estados
+## Actores del proceso
 
-### Estado de CabinaSalida (cabina en una salida específica)
-
-| Estado | Descripción |
+| Actor | Rol |
 |---|---|
-| `DISPONIBLE` | Libre para bloquear o reservar |
-| `BLOQUEADA` | Retenida por un booking ON HOLD |
-| `CONFIRMADA` | Vendida/confirmada |
-
-**Transiciones:**
-```
-DISPONIBLE → BLOQUEADA      (al crear ON HOLD)
-BLOQUEADA  → DISPONIBLE     (al expirar/liberar hold)
-BLOQUEADA  → CONFIRMADA     (al confirmar booking)
-CONFIRMADA → DISPONIBLE     (al cancelar cabina confirmada y liberar hold)
-```
-
-### Estado del Booking
-
-| Estado en DB | Visible en UI | Descripción |
-|---|---|---|
-| `PENDING` | Pending | En lista de espera (sin cabinas bloqueadas) |
-| `ON_HOLD` | On Hold | Cabinas bloqueadas, pendiente de confirmación |
-| `CONFIRMED` | Confirmed | Todas las cabinas confirmadas |
-| `HOLD_RELEASED` | Cancelled | Hold liberado sin venta |
-| `CANCELLED_CONFIRMED` | Cancelled | Venta con cabinas canceladas |
-| `CONFIRMED_HOLD_RELEASED` | Confirmed | Venta con holds liberados |
-| `CANCELLED_CONFIRMED_HOLD_RELEASED` | Cancelled | Venta cancelada con holds liberados |
-
-**Regla de cálculo:** El `estado_booking` se recalcula automáticamente cada vez que cambia el `estado_individual` de cualquier `BookingCabina` que pertenece al booking.
+| **Agencia** | Solicita bloqueos y reservas para sus clientes |
+| **Operador GTC** | Administra disponibilidad, aprueba confirmaciones, gestiona lista de espera |
+| **Sistema** | Expira bloqueos automáticamente, notifica, recalcula disponibilidad |
 
 ---
 
-## 4. Modelo de Datos (MongoDB)
+## Conceptos clave
 
-### Colección: `barcos`
-```json
-{
-  "_id": "ObjectID",
-  "nombre": "string",
-  "codigo": "string",
-  "capacidad_cabinas": "int",
-  "descripcion": "string",
-  "activo": "bool",
-  "created_at": "timestamp",
-  "updated_at": "timestamp"
-}
+| Término | Qué es |
+|---|---|
+| **Barco** | El crucero con sus características (capacidad, cabinas, itinerarios) |
+| **Cabina** | Cada espacio físico del barco (tipo: simple, doble, suite, triple) |
+| **Itinerario / Salida** | Un viaje específico del barco con fechas de salida y retorno |
+| **Espacio** | Cada lugar dentro de una cabina (ej: una cabina doble tiene 2 espacios) |
+| **Pedido** | La solicitud de bloqueo o reserva que hace una agencia |
+| **Grupo** | Conjunto de pedidos de la misma agencia para el mismo itinerario |
+| **Modo FIT** | Reserva individual (por pasajero) |
+| **Modo Charter** | Reserva de todo el barco o grupo grande |
+
+---
+
+## Estados de un pedido
+
+Cada pedido pasa por diferentes estados a lo largo de su vida:
+
+| Estado | Qué significa para el negocio |
+|---|---|
+| **On Hold** | La cabina está bloqueada para una agencia. Nadie más puede tomarla. Tiene fecha de vencimiento. |
+| **Pending (Lista de Espera)** | La agencia solicitó pero no hay cabinas libres. Queda en fila esperando que se libere algo. |
+| **Confirmed** | La venta está confirmada. Los pasajeros quedan registrados. |
+| **Hold Released** | El bloqueo fue liberado (venció o se canceló antes de confirmar). La cabina queda disponible. |
+| **Cancelled, Confirmed** | La venta estaba confirmada pero algunas cabinas fueron canceladas. |
+| **Confirmed, Hold Released** | Venta confirmada, pero algunos holds adicionales fueron liberados. |
+| **Cancelled, Confirmed, Hold Released** | Venta con cabinas canceladas y sus holds liberados. |
+
+---
+
+## Flujo 1 — Bloqueo directo (hay cabinas disponibles)
+
+**Cuándo aplica:** Hay espacios libres en el itinerario.
+
+```
+1. La agencia ve la disponibilidad del itinerario
+2. Selecciona las cabinas y número de pasajeros (adultos + niños)
+3. El operador ejecuta el bloqueo
+4. El sistema verifica:
+   - ¿Hay espacio suficiente en las cabinas seleccionadas?
+   - ¿El total de pasajeros no supera la capacidad del barco?
+5. Si todo está bien → el pedido queda en ON HOLD
+6. El sistema asigna fecha de vencimiento automáticamente
+   (basada en la configuración de la empresa y la fecha de salida)
+7. Si la fecha de vencimiento cae sábado → se extiende 2 días más
+   Si cae domingo → se extiende 1 día más
 ```
 
-### Colección: `cabinas`
-```json
-{
-  "_id": "ObjectID",
-  "barco_id": "ObjectID",
-  "numero": "string",
-  "tipo": "SIMPLE | DOBLE | SUITE | TRIPLE",
-  "deck": "string",
-  "precio_base": "float64",
-  "capacidad_pax": "int",
-  "activo": "bool"
-}
+**Resultado:** Pedido en **ON HOLD**, cabina bloqueada, fecha de vencimiento asignada.
+
+---
+
+## Flujo 2 — Lista de espera (no hay cabinas disponibles)
+
+**Cuándo aplica:** El itinerario no tiene cabinas libres, pero hay pedidos en ON HOLD que podrían liberarse.
+
+```
+1. La agencia solicita un bloqueo
+2. El sistema detecta que no hay cabinas disponibles
+3. La solicitud queda en PENDING (lista de espera)
+4. El sistema registra la solicitud con fecha de vencimiento
+5. El operador recibe notificación
+6. Cuando algún ON HOLD se libera, el operador ve la lista de espera
+7. El operador decide manualmente a qué agencia asignar el espacio
+8. La agencia en espera pasa de PENDING → ON HOLD
+   (y el pedido de lista de espera queda marcado como "SE CONVIERTE A PEDIDO")
 ```
 
-### Colección: `salidas`
-```json
-{
-  "_id": "ObjectID",
-  "barco_id": "ObjectID",
-  "codigo_salida": "string",
-  "itinerario": "string",
-  "fecha_salida": "date",
-  "fecha_retorno": "date",
-  "estado": "ACTIVA | CANCELADA | CERRADA",
-  "created_at": "timestamp"
-}
+**Resultado:** La agencia gana el bloqueo que se liberó, su pedido anterior de espera queda cerrado.
+
+---
+
+## Flujo 3 — Confirmación de venta
+
+**Cuándo aplica:** La agencia decide confirmar la compra mientras el pedido está en ON HOLD.
+
+```
+1. El operador selecciona los pedidos del grupo a confirmar
+2. Indica si los pasajeros desean boletos aéreos o no
+3. El sistema:
+   - Cambia el estado a CONFIRMED
+   - Crea automáticamente un registro por cada pasajero (adulto y niño)
+   - Calcula tarifas finales según promociones vigentes
+   - Registra fecha de confirmación
+4. Se envía mail de confirmación a la agencia
 ```
 
-### Colección: `cabinas_salida` (inventario por salida)
-```json
-{
-  "_id": "ObjectID",
-  "cabina_id": "ObjectID",
-  "salida_id": "ObjectID",
-  "precio": "float64",
-  "estado": "DISPONIBLE | BLOQUEADA | CONFIRMADA",
-  "updated_at": "timestamp"
-}
-```
-> Índice único compuesto: `{cabina_id, salida_id}`
+**Importante:** Al confirmar, si el pasajero NO desea boleto aéreo, se aplica un cargo adicional de $50 por pasajero.
 
-### Colección: `bookings`
-```json
-{
-  "_id": "ObjectID",
-  "agencia_id": "string",
-  "salida_id": "ObjectID",
-  "estado": "PENDING | ON_HOLD | CONFIRMED | HOLD_RELEASED | CANCELLED_CONFIRMED | CONFIRMED_HOLD_RELEASED | CANCELLED_CONFIRMED_HOLD_RELEASED",
-  "fecha_solicitud": "timestamp",
-  "fecha_expiracion": "timestamp",
-  "dias_plazo": "int (default: 8)",
-  "operador_id": "string",
-  "notas": "string",
-  "created_at": "timestamp",
-  "updated_at": "timestamp"
-}
-```
+---
 
-### Colección: `bookings_cabinas`
-```json
-{
-  "_id": "ObjectID",
-  "booking_id": "ObjectID",
-  "cabina_salida_id": "ObjectID",
-  "estado_individual": "ON_HOLD | CONFIRMED | HOLD_RELEASED | CANCELLED",
-  "precio_aplicado": "float64",
-  "updated_at": "timestamp"
-}
-```
+## Flujo 4 — Liberación de bloqueo (Hold Release)
 
-### Colección: `historial_estados`
-```json
-{
-  "_id": "ObjectID",
-  "entidad": "BOOKING | CABINA_SALIDA",
-  "entidad_id": "ObjectID",
-  "estado_anterior": "string",
-  "estado_nuevo": "string",
-  "usuario_id": "string",
-  "motivo": "string",
-  "fecha": "timestamp"
-}
+**Cuándo aplica:** La agencia o el operador decide liberar el espacio sin confirmar.
+
+```
+1. El operador selecciona los pedidos a liberar
+2. El sistema:
+   - Cambia el estado a HOLD RELEASED
+   - Libera los espacios de las cabinas
+   - Las cabinas vuelven a estar DISPONIBLES
+   - Registra quién realizó la liberación y cuándo
+3. Se envía notificación de cancelación
 ```
 
 ---
 
-## 5. API REST
+## Flujo 5 — Cancelación de una confirmación
 
-### Barcos y Cabinas
-```
-GET    /barcos                          → listar barcos
-POST   /barcos                          → crear barco
-GET    /barcos/:id/cabinas              → cabinas de un barco
-POST   /cabinas                         → crear cabina
-```
+**Cuándo aplica:** Una venta ya confirmada necesita ser cancelada.
 
-### Salidas
 ```
-GET    /salidas                         → listar salidas (filtros: barco, fecha)
-POST   /salidas                         → crear salida
-GET    /salidas/:id/disponibilidad      → cabinas con estado por salida
-POST   /salidas/:id/inicializar-cabinas → crear CabinaSalida para todas las cabinas del barco
-```
-
-### Bookings (núcleo del MS)
-```
-POST   /bookings                        → crear booking (evalúa disponibilidad → ON_HOLD o PENDING)
-GET    /bookings                        → listar bookings (filtros: estado, agencia, salida)
-GET    /bookings/:id                    → detalle booking + cabinas
-PUT    /bookings/:id/confirmar          → ON_HOLD → CONFIRMED
-PUT    /bookings/:id/liberar            → ON_HOLD → HOLD_RELEASED
-PUT    /bookings/:id/cancelar-cabina    → cancela cabina individual dentro del booking
-PUT    /bookings/:id/liberar-cabina     → libera cabina individual confirmada
-PUT    /bookings/:id/asignar-desde-espera → PENDING → ON_HOLD (operador asigna manualmente)
-
-# Job interno
-POST   /internal/bookings/expirar       → expira ON_HOLD vencidos (scheduler cada hora)
+1. El operador cancela la confirmación
+2. El sistema:
+   - Cambia el estado a CANCELLED, CONFIRMED
+   - Inactiva los pasajeros registrados
+   - Inactiva los servicios adicionales (excepto cargos de cancelación)
+   - Registra fecha y usuario que canceló
 ```
 
 ---
 
-## 6. Reglas de Negocio
+## Flujo 6 — Vencimiento automático (sistema)
+
+**Cuándo aplica:** El plazo de un ON HOLD llega a su fecha de vencimiento sin ser confirmado.
+
+```
+Cada 3 minutos el sistema revisa pedidos vencidos:
+
+Para bloqueos normales vencidos:
+  → El estado cambia a HOLD RELEASED
+  → Los espacios se liberan automáticamente
+  → Las cabinas vuelven a estar DISPONIBLES
+
+Para bloqueos vencidos que tienen lista de espera:
+  → Igual que arriba, pero el sistema también
+    notifica al operador que hay pedidos en espera esperando ese espacio
+
+Para pedidos en lista de espera vencidos:
+  → Se eliminan de la fila
+```
+
+---
+
+## Flujo 7 — Extensión de plazo
+
+**Cuándo aplica:** La agencia necesita más tiempo antes de confirmar.
+
+```
+Opción A — Solicitud de extensión:
+  1. La agencia solicita más tiempo
+  2. El operador aprueba y define días/horas adicionales
+  3. El sistema suma el tiempo aprobado a la fecha de vencimiento
+  4. Se registra número de extensiones realizadas
+
+Opción B — Extensión directa por operador:
+  1. El operador extiende directamente el plazo
+  2. Solo se puede extender si aún NO ha vencido
+  3. El sistema actualiza la fecha de vencimiento
+  4. Se envía mail de confirmación de extensión
+```
+
+---
+
+## Reglas de negocio
 
 | # | Regla |
 |---|---|
-| R1 | Al crear un booking: si hay `DISPONIBLE` → `ON_HOLD`; si hay `ON_HOLD` pero no `DISPONIBLE` → `PENDING`; si no hay ninguno → error 409 |
-| R2 | Una cabina `BLOQUEADA` o `CONFIRMADA` no puede ser tomada por otro booking |
-| R3 | `ON_HOLD` expira en 8 días (configurable por booking). Al expirar → `HOLD_RELEASED` y cabinas → `DISPONIBLE` |
-| R4 | `PENDING` no expira. Queda activo hasta que el operador lo gestione o la agencia lo cancele |
-| R5 | Cuando un hold se libera, el operador ve la lista de `PENDING` y decide manualmente a quién asignar |
-| R6 | El `estado` del booking se recalcula automáticamente al cambiar cualquier `BookingCabina` |
-| R7 | Toda transición de estado queda registrada en `historial_estados` con usuario, fecha y motivo |
-| R8 | Un booking puede incluir múltiples cabinas de la misma salida en una sola operación |
+| **R1** | Una cabina bloqueada o confirmada **no puede** ser tomada por otra agencia |
+| **R2** | La disponibilidad se valida por **espacios (pax)**, no solo por cabina. Si una cabina tiene capacidad para 2 y ya hay 1 pax bloqueado, solo puede entrar 1 más |
+| **R3** | El total de pasajeros de un itinerario **no puede superar** la capacidad del barco |
+| **R4** | El plazo de vencimiento se calcula según configuración de la empresa y la fecha de salida del crucero |
+| **R5** | Si el vencimiento cae en fin de semana, se extiende automáticamente (sábado +2 días, domingo +1 día) |
+| **R6** | La lista de espera solo aplica cuando NO hay cabinas disponibles pero SÍ hay bloqueos activos |
+| **R7** | El operador decide manualmente a qué agencia de la lista de espera asignar un espacio liberado |
+| **R8** | Al confirmar, el sistema crea automáticamente un registro por cada pasajero |
+| **R9** | Si un pasajero no desea boleto aéreo, se aplica un cargo de $50 por pasajero |
+| **R10** | La extensión de plazo solo se puede hacer si el pedido todavía no ha vencido |
+| **R11** | Se lleva registro completo de quién hizo cada cambio, cuándo y por qué |
+| **R12** | El sistema revisa pedidos vencidos cada 3 minutos automáticamente |
+| **R13** | Un pedido puede incluir múltiples cabinas del mismo itinerario en una sola operación |
+| **R14** | Los pedidos se agrupan por agencia e itinerario (concepto de "grupo") |
 
 ---
 
-## 7. Arquitectura del MS (Hexagonal)
+## Notificaciones del sistema
 
-```
-booking-ms/
-├── cmd/
-│   └── api/main.go
-├── config/
-│   └── config.go
-├── internal/
-│   ├── domain/
-│   │   ├── models.go          (Barco, Cabina, Salida, CabinaSalida, Booking, BookingCabina, HistorialEstado)
-│   │   └── states.go          (constantes de estado + lógica de recálculo)
-│   ├── ports/
-│   │   └── ports.go           (interfaces de repositorios y servicios)
-│   ├── usecase/
-│   │   ├── booking_usecase.go
-│   │   ├── disponibilidad_usecase.go
-│   │   └── expiracion_usecase.go
-│   └── adapters/
-│       ├── http/
-│       │   ├── router.go
-│       │   └── handlers/
-│       │       ├── barco_handlers.go
-│       │       ├── salida_handlers.go
-│       │       ├── booking_handlers.go
-│       │       └── disponibilidad_handlers.go
-│       └── mongo/
-│           ├── conn.go
-│           ├── repo_barco.go
-│           ├── repo_cabina.go
-│           ├── repo_salida.go
-│           ├── repo_cabina_salida.go
-│           ├── repo_booking.go
-│           └── repo_historial.go
-├── Dockerfile
-├── docker-compose.yml
-├── go.mod
-└── .env.example
-```
+| Evento | A quién | Qué se envía |
+|---|---|---|
+| Bloqueo creado (ON HOLD) | Agencia + Operador | Confirmación del bloqueo con fecha de vencimiento |
+| Lista de espera creada | Agencia + Operador | Confirmación de ingreso a lista de espera |
+| Lista de espera eliminada | Agencia | Notificación de baja de lista de espera |
+| Vencimiento próximo | Agencia | Recordatorio de vencimiento (notificación 1 y 2) |
+| Confirmación de venta | Agencia + Operador | Detalle de la confirmación |
+| Liberación / Cancelación | Agencia | Notificación de cancelación |
+| Extensión de plazo aprobada | Agencia | Confirmación de nueva fecha de vencimiento |
 
 ---
 
-## 8. Consideraciones Técnicas
+## Funciones adicionales del operador
 
-- **Concurrencia:** Al bloquear cabinas, usar transacciones MongoDB (multi-document) para evitar doble bloqueo de la misma cabina.
-- **Scheduler:** Job de expiración implementado con `time.Ticker` o cron interno en Go. Se ejecuta cada hora y revisa bookings `ON_HOLD` vencidos.
-- **Recálculo de estado:** La función `RecalcularEstadoBooking(cabinas []BookingCabina) string` vive en `domain/states.go` — es pura y testeable sin DB.
-- **Índices MongoDB:** Índice en `{salida_id, estado}` en `cabinas_salida` para consultas de disponibilidad eficientes.
+| Función | Descripción |
+|---|---|
+| **Abrir/Cerrar cabina** | El operador puede marcar una cabina como no disponible temporalmente (mantenimiento u otro motivo) |
+| **Intercambiar cabinas** | Mover pasajeros de una cabina a otra dentro del mismo itinerario |
+| **Reasignar espacios** | Redistribuir espacios de cabina entre pedidos |
+| **Ver disponibilidad en tiempo real** | Ver el estado de todas las cabinas de un itinerario (disponible, bloqueada, confirmada) |
+| **Ver lista de espera** | Ver todas las agencias en espera para un itinerario |
+| **Reportes** | Reporte de grupos, actividad, extensiones, cancelaciones |
+
+---
+
+## Lo que el sistema calcula automáticamente
+
+- Estado actualizado de cada cabina en tiempo real
+- Disponibilidad del barco (cuántos pasajeros quedan disponibles)
+- Contadores del itinerario: bloqueados, confirmados, en espera, disponibles
+- Tarifas finales al confirmar (según promociones vigentes)
+- Cargos adicionales (sin boleto aéreo, servicios adicionales)
+
