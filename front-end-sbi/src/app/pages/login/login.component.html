@@ -1,32 +1,22 @@
 <div class="basic-container" style="padding-bottom: 10px;">
   <app-header-login></app-header-login>
-  <mat-card class="example-card" >
-    <form novalidate #f="ngForm" (ngSubmit)="ingresar_res( f )" >
-      <mat-card-content>
-        <section class="basic-container" style="padding-top: 0px;">
-          <h2 style="text-align: center"><strong>Sign in</strong></h2>
-          <mat-form-field appearance="fill" class="example-full-width">
-            <input matInput placeholder="E-mail User" name="usuario" id="usuario" [ngModel] required>
-            <mat-icon matSuffix>person</mat-icon>
-          </mat-form-field>
-          <mat-form-field appearance="fill" class="example-full-width">
-            <input matInput [type]=" hide ? 'password' : 'text'" placeholder="Password" name="password" [ngModel] required>
-            <mat-icon matSuffix (click)="hide = !hide">{{ hide ? 'visibility' : 'visibility_off'}}</mat-icon>
-          </mat-form-field>
-          <!--section style="margin: 20px 0px">
-            <a >Olvido su contraseña?</a>
-          </section-->
-        </section>
-      </mat-card-content>
-      <div style="text-align: center">
-        <mat-card-actions>
-          <button mat-raised-button type="submit" id="ingresar">Login</button>
-        </mat-card-actions>
-      </div>
-    </form>
+  <mat-card class="example-card">
+    <mat-card-content>
+      <section class="basic-container" style="padding-top: 0px;">
+        <h2 style="text-align: center"><strong>Sign in</strong></h2>
+        <mat-form-field appearance="fill" class="example-full-width">
+          <input matInput placeholder="E-mail User" [(ngModel)]="usuario_input">
+          <mat-icon matSuffix>person</mat-icon>
+        </mat-form-field>
+        <mat-form-field appearance="fill" class="example-full-width">
+          <input matInput [type]="hide ? 'password' : 'text'" placeholder="Password" [(ngModel)]="password_input">
+          <mat-icon matSuffix (click)="hide = !hide">{{ hide ? 'visibility' : 'visibility_off'}}</mat-icon>
+        </mat-form-field>
+      </section>
+    </mat-card-content>
+    <mat-card-actions style="justify-content: center; display: flex;">
+      <button mat-raised-button color="primary" type="button" id="ingresar" (click)="ingresar()">Login</button>
+    </mat-card-actions>
   </mat-card>
 </div>
-<!-- <div **ngIf="asd"
-style="background: orange; background-blend-mode: color bh">
-</div> -->
 <app-footer-login></app-footer-login>

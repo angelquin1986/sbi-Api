@@ -17,6 +17,8 @@ export class LoginComponent implements OnInit {
 
   estado = false;
   hide = true;
+  usuario_input = '';
+  password_input = '';
   usuario = localStorage.getItem('usuario');
 
   constructor(
@@ -46,10 +48,35 @@ export class LoginComponent implements OnInit {
     localStorage.removeItem('fin');
     localStorage.removeItem('contacto');
     localStorage.removeItem('tm');
-    this.router.navigate(['./login']);
+    this.router.navigate(['/login']);
   }
 
-  ingresar_res(forma: NgForm) {
+  ingresar() {
+    const user = this.usuario_input.trim();
+    const pass = this.password_input;
+    if (!user || !pass) {
+      alert('Fill in all the fields');
+      return;
+    }
+    this.loginService.postInicia(pass, user).subscribe(
+      (data: any) => {
+        if (data.status) {
+          localStorage.setItem('token', btoa(data.token));
+          localStorage.setItem('estado', btoa(data.status));
+          localStorage.setItem('email', btoa(user));
+          this.usuarioService.getSeller(user).subscribe(
+            (_sellerInfo: any) => { this.router.navigate(['/dashboard']); },
+            (_err: any) => { this.router.navigate(['/dashboard']); }
+          );
+        } else {
+          alert('Incorrect data');
+        }
+      },
+      (_err: any) => { alert('Incorrect data'); }
+    );
+  }
+
+  ingresar_res(forma: any) {
     this.loginService.postInicia(forma.value.password , forma.value.usuario).subscribe(
       (data: any) => {
         const usuarioForma = forma.value.usuario;

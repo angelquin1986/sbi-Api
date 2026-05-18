@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { FindService } from '../../services/find.service';
 
 @Component({
@@ -7,7 +7,7 @@ import { FindService } from '../../services/find.service';
   templateUrl: './graphic-constructor.component.html',
   styleUrls: ['./graphic-constructor.component.css']
 })
-export class GraphicConstructorComponent implements OnInit {
+export class GraphicConstructorComponent implements OnInit, OnChanges {
 
   public datos: object[] = [];
   public datosTM: object[] = [];
@@ -17,7 +17,7 @@ export class GraphicConstructorComponent implements OnInit {
   public height = '80%';
   @Input() type = 'Column3d';
   public dataFormat = 'json';
-  public estructuraGrafica: Object;
+  public estructuraGrafica: Object = { chart: {}, data: [] };
 
   public meses: object[] = [
     { 'id': '01', 'value': 'Jan' },
@@ -39,14 +39,19 @@ export class GraphicConstructorComponent implements OnInit {
     private buscaService: FindService
   ) {}
 
-  ngOnInit() {
-    setTimeout(() => {
+  ngOnInit() {}
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['idsAgente'] && changes['idsAgente'].currentValue) {
+      this.datos = [];
+      this.datosTM = [];
       this.ObtieneDatosxMes();
       this.ObtieneDatosxFechaOperacion();
-    }, 1000);
+    }
   }
 
   ObtieneDatosxMes() {
+    if (!this.idsAgente) { return; }
     this.buscaService.obtenerOrdersporMes(this.idsAgente).subscribe(
       (orders: any) => {
         // console.log('++++++*', orders);
@@ -65,6 +70,7 @@ export class GraphicConstructorComponent implements OnInit {
   }
 
   ObtieneDatosxFechaOperacion() {
+    if (!this.idsAgente) { return; }
     this.buscaService.obtenerCantTM(this.idsAgente).subscribe(
       (cantidadTM: any) => {
         if (cantidadTM['cuenta'].length > 0) {

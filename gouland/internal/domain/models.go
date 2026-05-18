@@ -9,7 +9,7 @@ import (
 
 // Country representa un país
 type Country struct {
-ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+ID        primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 Code      string             `bson:"code" json:"code"`
 Name      string             `bson:"name" json:"name"`
 ISO       string             `bson:"iso" json:"iso"`
@@ -18,7 +18,7 @@ CreatedAt int64              `bson:"created_at" json:"created_at"`
 
 // Passenger — campos idénticos al modelo Mongoose original
 type Passenger struct {
-ID                  primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+ID                  primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 PaxTitle            string             `bson:"pax_title" json:"pax_title"`
 PaxFirstName        string             `bson:"pax_first_name" json:"pax_first_name"`
 PaxLastName         string             `bson:"pax_last_name" json:"pax_last_name"`
@@ -50,7 +50,7 @@ PaxIdOrder          primitive.ObjectID `bson:"pax_id_order" json:"pax_id_order"`
 
 // Order — campos idénticos al modelo Mongoose original
 type Order struct {
-ID                primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+ID                primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 DateSubmited      time.Time          `bson:"date_submited" json:"date_submited"`
 ContactPersonName string             `bson:"contact_person_name" json:"contact_person_name"`
 ContactPersonMail string             `bson:"contact_person_mail" json:"contact_person_mail"`
@@ -68,11 +68,11 @@ TmDateCruise      *time.Time         `bson:"tm_date_cruise" json:"tm_date_cruise
 
 // Seller / Usuario — campos idénticos al modelo Mongoose original
 type Seller struct {
-ID         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+ID         primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 NSeller    string             `bson:"nseller" json:"nseller"`
 MailSeller string             `bson:"mailseller" json:"mailseller"`
 Role       string             `bson:"role" json:"role"`
-SellerID   string             `bson:"id" json:"seller_id"`
+SellerID   string             `bson:"id" json:"id"`
 Company    string             `bson:"company" json:"company"`
 NUser      string             `bson:"nuser" json:"nuser"`
 Password   string             `bson:"password,omitempty" json:"-"`
@@ -80,7 +80,7 @@ Password   string             `bson:"password,omitempty" json:"-"`
 
 // Contact — campos idénticos al modelo Mongoose original
 type Contact struct {
-ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+ID          primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 Nombre      string             `bson:"nombre" json:"nombre"`
 Cargo       string             `bson:"cargo" json:"cargo"`
 Mail        string             `bson:"mail" json:"mail"`
@@ -92,7 +92,7 @@ ExtIp       string             `bson:"ext_Ip" json:"ext_Ip"`
 
 // File / Archivo — modelo para metadatos de archivos en MongoDB
 type File struct {
-ID           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+ID           primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 FileName     string             `bson:"file_name" json:"file_name"`
 FileNameUser string             `bson:"file_name_user" json:"file_name_user"`
 FileSize     string             `bson:"file_size" json:"file_size"`
@@ -103,7 +103,7 @@ FileIdOrder  primitive.ObjectID `bson:"file_id_order" json:"file_id_order"`
 
 // Document (para uso futuro)
 type Document struct {
-ID      primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+ID      primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 Name    string             `bson:"name" json:"name"`
 Type    string             `bson:"type" json:"type"`
 Path    string             `bson:"path" json:"path"`

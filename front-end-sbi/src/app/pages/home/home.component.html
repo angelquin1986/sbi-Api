@@ -7,22 +7,22 @@
       <div class="main-panel" style="padding: 30px;">
         <h1 style="text-align: center;"><strong>GENERAL INFORMATION</strong></h1>
         <div style="display: flex; justify-content: center; align-items: center;">
-          <mat-spinner *ngIf="this.status==false" class="custom-spinner" style="margin-top: 40px;"></mat-spinner>
+          <mat-spinner *ngIf="!status" class="custom-spinner" style="margin-top: 40px;"></mat-spinner>
           <mat-card class="card-graphic center" style="margin-left: 20px; margin-right: 20px; margin-top: 40px;"
-            *ngIf="this.status==true">
+            *ngIf="status">
             <mat-card-header>
             </mat-card-header>
             <mat-card-content>
-              <app-graphic-constructor #1 [idsAgente]="idsAgente" [estructura]="estructurames" type="column3d">
+              <app-graphic-constructor [idsAgente]="idsAgente" [estructura]="estructurames" type="column3d">
               </app-graphic-constructor>
             </mat-card-content>
           </mat-card>
           <mat-card class="card-graphic center" style="margin-left: 20px; margin-right: 20px; margin-top: 40px;"
-            *ngIf="this.status==true">
+            *ngIf="status">
             <mat-card-header>
             </mat-card-header>
             <mat-card-content>
-              <app-graphic-constructor #2 [idsAgente]="idsAgente" [estructura]="estructurafecha" type="pie3d">
+              <app-graphic-constructor [idsAgente]="idsAgente" [estructura]="estructurafecha" type="pie3d">
               </app-graphic-constructor>
             </mat-card-content>
           </mat-card>

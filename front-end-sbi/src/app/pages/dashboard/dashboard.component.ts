@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild} from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { NgForm, FormControl, FormGroup, FormBuilder, Validators} from '@angular/forms';
 import { ActivatedRoute, Router} from '@angular/router';
 import { FindService} from '../../services/find.service';
@@ -59,17 +59,17 @@ export class DashboardComponent implements OnInit {
   dataSource: MatTableDataSource<Order>;
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
-  public status: Boolean;
+  public status = true;
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private usuarioService: UserService,
     private orderService: FindService,
     private pasajeroService: PassengerService,
     public paisesService: CountryService,
     public _orderService: OrderService,
-
+    private cdr: ChangeDetectorRef,
     fb: FormBuilder
     ) {
       this.cargaPaises();
@@ -112,7 +112,8 @@ export class DashboardComponent implements OnInit {
             if (localStorage.getItem('inicio') !== null || '') {
               this.cargarDatos();
             }
-          });
+          },
+          (_err) => { this.cargarDatos(); });
       }
     });
   }
@@ -210,6 +211,7 @@ export class DashboardComponent implements OnInit {
 
   consultaAgente( forma: NgForm ) {
     this.status = true;
+    this.cdr.detectChanges();
     const searchButton = <HTMLInputElement> document.getElementById('searchButton');
     searchButton.disabled = true;
     const excelButton = <HTMLInputElement> document.getElementById('excelButton');
@@ -270,13 +272,15 @@ export class DashboardComponent implements OnInit {
           this.dataSource = new MatTableDataSource( this.orders);
           this.dataSource.paginator = this.paginator;
           this.status = false;
+          this.cdr.detectChanges();
           this.dataSource.sort = this.sort;
           const searchButton = <HTMLInputElement> document.getElementById('searchButton');
-          searchButton.disabled = false;
+          if (searchButton) { searchButton.disabled = false; }
           const excelButton = <HTMLInputElement> document.getElementById('excelButton');
-          excelButton.disabled = false;
+          if (excelButton) { excelButton.disabled = false; }
         }
-      });
+      },
+      (_err) => { this.status = false; this.cdr.detectChanges(); });
   }
 
   extraeDatosOrder(token) {
@@ -290,13 +294,15 @@ export class DashboardComponent implements OnInit {
           this.dataSource = new MatTableDataSource( this.orders);
           this.dataSource.paginator = this.paginator;
           this.status = false;
+          this.cdr.detectChanges();
           this.dataSource.sort = this.sort;
           const searchButton = <HTMLInputElement> document.getElementById('searchButton');
-          searchButton.disabled = false;
+          if (searchButton) { searchButton.disabled = false; }
           const excelButton = <HTMLInputElement> document.getElementById('excelButton');
-          excelButton.disabled = false;
+          if (excelButton) { excelButton.disabled = false; }
         }
-      });
+      },
+      (_err) => { this.status = false; this.cdr.detectChanges(); });
   }
 
   aplicarFiltro(valorFiltro: string) {
@@ -317,11 +323,12 @@ export class DashboardComponent implements OnInit {
     this.dataSource = new MatTableDataSource( this.orders);
     this.dataSource.paginator = this.paginator;
     this.status = false;
+    this.cdr.detectChanges();
     this.dataSource.sort = this.sort;
     const searchButton = <HTMLInputElement> document.getElementById('searchButton');
-    searchButton.disabled = false;
+    if (searchButton) { searchButton.disabled = false; }
     const excelButton = <HTMLInputElement> document.getElementById('excelButton');
-    excelButton.disabled = false;
+    if (excelButton) { excelButton.disabled = false; }
   }
 
   exportaExcel2 () {
@@ -434,6 +441,14 @@ export class DashboardComponent implements OnInit {
     localStorage.removeItem('fin');
     localStorage.removeItem('contacto');
     localStorage.removeItem('tm');
-    this.router.navigate(['./login']);
+    this.router.navigate(['/login']);
+  }
+
+  goToEdit(id: string) {
+    this.router.navigate(['/edit', id]);
+  }
+
+  goToDocument(id: string) {
+    this.router.navigate(['/document', id]);
   }
 }

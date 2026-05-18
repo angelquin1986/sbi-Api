@@ -83,14 +83,14 @@
     </section>
     <!-- <hr> -->
     <div style="display: flex; justify-content: center; align-items: center;">
-      <mat-spinner *ngIf="this.status" class="custom-spinner" style="margin-bottom: 500px;"></mat-spinner>
+      <mat-spinner *ngIf="status" class="custom-spinner" style="margin-bottom: 500px;"></mat-spinner>
     </div>
     <section>
       <!--mat-form-field>
             <input matInput (keyup)="aplicarFiltro($event.target.value)" placeholder="Filtrar">
           </mat-form-field-->
       <div class="contiene mat-elevation-z8">
-        <table mat-table [dataSource]="dataSource" matSort *ngIf="!this.status">
+        <table mat-table [dataSource]="dataSource" matSort *ngIf="!status">
 
           <!-- Id Order -->
           <ng-container matColumnDef="_id">
@@ -172,7 +172,7 @@
                 <mat-icon>more_vert</mat-icon>
               </button>
               <mat-menu #menu="matMenu">
-                <button mat-menu-item routerLink="../edit/{{row._id}}" id="row._id" [(disabled)]="tiempo">
+                <button mat-menu-item (click)="goToEdit(row._id)" id="row._id" [disabled]="tiempo">
                   <mat-icon matSuffix>edit</mat-icon>
                   <span>Edit</span>
                 </button>
@@ -181,7 +181,7 @@
                   <mat-icon matSuffix>get_app</mat-icon>
                   <span>Export PDF</span>
                 </button>
-                <button mat-menu-item routerLink="../document/{{row._id}}">
+                <button mat-menu-item (click)="goToDocument(row._id)">
                   <mat-icon matSuffix>note_add</mat-icon>
                   <span>Add Documents</span>
                 </button>

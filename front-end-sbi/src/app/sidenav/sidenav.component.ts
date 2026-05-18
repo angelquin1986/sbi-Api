@@ -78,7 +78,7 @@ export class SidenavComponent implements OnInit {
     localStorage.removeItem('fin');
     localStorage.removeItem('contacto');
     localStorage.removeItem('tm');
-    this.router.navigate(['./login']);
+    this.router.navigate(['/login']);
   }
 
 }

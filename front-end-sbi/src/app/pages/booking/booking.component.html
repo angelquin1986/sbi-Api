@@ -97,7 +97,7 @@
                         <td>
                             <select id="billing_country" name="billing_country" [(ngModel)]="order.billing_country">
                                 <option value="0" selected="selected">Please select</option>
-                                <option *ngFor="let pais of listCountries " [value]="pais.Code">{{ pais.Name }}</option>
+                                <option *ngFor="let pais of listCountries " [value]="pais.code">{{ pais.name }}</option>
                             </select>
                         </td>
                     </tr>
@@ -216,8 +216,8 @@
                                 <select id="pax_nationality_{{ e }}" name="pax_nationality_{{ e }}"
                                     [(ngModel)]="element.pax_nationality" required>
                                     <option value="0" selected="selected" disabled>Please select</option>
-                                    <option *ngFor="let paisnac of listCountries " [value]="paisnac.Code">{{
-                                        paisnac.Name }}</option>
+                                    <option *ngFor="let paisnac of listCountries " [value]="paisnac.code">{{
+                                        paisnac.name }}</option>
                                     <option value="AU">Australia</option>
                                     <option value="DE">Germany</option>
                                     <option value="GB">United Kingdom</option>

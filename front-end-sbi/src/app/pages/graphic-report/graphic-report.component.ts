@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, Input } from '@angular/core';
+import { Component, ViewChild, OnInit, Input, ChangeDetectorRef } from '@angular/core';
 import { FindService } from '../../services/find.service';
 import { Seller } from '../../models/seller.model';
 import { UserService } from '../../services/user.service';
@@ -49,12 +49,13 @@ export class GraphicReportComponent implements OnInit {
   // public sellerCompany: Seller[] = [];
   public idsAgente = '';
   public nameCiaReportSellers = environment.nameCiaReportSellers;
-  public status: Boolean;
+  public status = false;
 
 
   constructor(
     public usuarioService: UserService,
-    private buscaService: FindService
+    private buscaService: FindService,
+    private cdr: ChangeDetectorRef
   ) {
     this.status = false;
     this.agruparSellers();
@@ -64,11 +65,14 @@ export class GraphicReportComponent implements OnInit {
         this.idsAgente = sellerInfo['usuarios']['0'].id;
         if (this.rolAgente === 'OPERACION_ROLE') {
           this.listarVendedores();
+          // status se activa dentro de listarVendedores cuando los sellers cargan
         } else {
           this.sellerCompany = sellerInfo['usuarios'];
+          this.status = true;
+          this.cdr.detectChanges();
         }
-        this.status = true;
-      });
+      },
+      (_err) => { this.status = true; this.cdr.detectChanges(); });
   }
 
   ngOnInit() { }
@@ -77,8 +81,10 @@ export class GraphicReportComponent implements OnInit {
     this.usuarioService.getSellersCompany(this.nameCiaReportSellers).subscribe(
       (sellers: any) => {
         this.sellerCompany = sellers['usuarios'];
-        // console.log(this.sellerCompany);
-      });
+        this.status = true;
+        this.cdr.detectChanges();
+      },
+      (_err) => { this.status = true; this.cdr.detectChanges(); });
   }
 
   agruparSellers() {

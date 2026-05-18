@@ -32,10 +32,9 @@ import * as CryptoJS from "crypto-js";
 // the `default as` syntax.
 import * as _moment from "moment";
 import { Seller } from "../../models/seller.model";
-// tslint:disable-next-line:no-duplicate-imports
-// import {default as _rollupMoment} from 'moment';
 
-const moment = _moment;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const moment: any = (_moment as any).default ?? _moment;
 
 // See the Moment.js docs for the meaning of these formats:
 // https://momentjs.com/docs/#/displaying/format/
@@ -656,7 +655,7 @@ export class BookingComponent implements OnInit {
   showCountries() {
     this._countryService.mostrarPaises().subscribe((res_countries) => {
       this.listCountries = res_countries.paises;
-      this.listCountries.sort((a, b) => a.Name.localeCompare(b.Name)); // Oder by Name Asc
+      this.listCountries.sort((a, b) => a.name.localeCompare(b.name)); // Oder by Name Asc
     });
   }
 

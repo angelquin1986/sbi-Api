@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router} from '@angular/router';
 import { PassengerService} from '../../services/passenger.service';
 import { OrderService} from '../../services/order.service';
@@ -28,10 +28,9 @@ import * as CryptoJS from 'crypto-js';
 // the `default as` syntax.
 import * as _moment from 'moment';
 import {DialogInsuranceInfoComponent, DialogPassportInfoComponent} from './booking.component';
-// tslint:disable-next-line:no-duplicate-imports
-// import {default as _rollupMoment} from 'moment';
 
-const moment = _moment;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const moment: any = (_moment as any).default ?? _moment;
 
 // See the Moment.js docs for the meaning of these formats:
 // https://momentjs.com/docs/#/displaying/format/
@@ -139,7 +138,8 @@ export class EditBookingComponent implements OnInit {
     public _sellerService: UserService,
     public _countryService: CountryService,
     public archivoService: ArchivoService,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -253,15 +253,14 @@ export class EditBookingComponent implements OnInit {
   cargarCabeceraOrder( id: string ) {
     this._orderService.obtenerOrder( id )
       .subscribe( order => {
-        // console.log( order );
         this.order = order;
         console.log('Posee TM.?: ' + this.order.tm_date_cruise);
         this.tiempoEdit(this.order.tm_date_cruise);
         this.codeSeller = this.order.sales_agent_id;
         this.numberPaxs = order.number_pax;
+        this.cdr.detectChanges();
         this.mostrarPasajeros( id );
         this.mostrarDatosVendedor( this.codeSeller );
-        // this.countdownOrder( this.order.tm_date_cruise );
       });
   }
 
@@ -302,6 +301,7 @@ export class EditBookingComponent implements OnInit {
 
           this.listPassengers[p] = pasajero;
         }
+        this.cdr.detectChanges();
         // =======================================================================
 
         // console.log( this.listPassengers );
@@ -574,7 +574,7 @@ export class EditBookingComponent implements OnInit {
     this._countryService.mostrarPaises()
       .subscribe( res_countries => {
         this.listCountries = res_countries.paises;
-        this.listCountries.sort((a, b) => a.Name.localeCompare(b.Name)); // Oder by Name Asc
+        this.listCountries.sort((a, b) => a.name.localeCompare(b.name)); // Oder by Name Asc
       });
   }
 

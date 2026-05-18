@@ -2,6 +2,7 @@ version: "3.8"
 services:
   mongo:
     image: mongo:6
+    command: ["--setParameter", "diagnosticDataCollectionEnabled=false"]
     environment:
       - MONGO_INITDB_DATABASE=bookingDB
     volumes:

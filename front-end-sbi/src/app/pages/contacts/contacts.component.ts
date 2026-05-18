@@ -64,7 +64,7 @@ export class ContactsComponent implements OnInit {
   }
 
   ingresarSesion() {
-    this.router.navigate(['./login']);
+    this.router.navigate(['/login']);
   }
 
   cerrarSesion() {
@@ -78,7 +78,7 @@ export class ContactsComponent implements OnInit {
     localStorage.removeItem('fin');
     localStorage.removeItem('contacto');
     localStorage.removeItem('tm');
-    this.router.navigate(['./login']);
+    this.router.navigate(['/login']);
   }
 
 }

@@ -1,8 +1,8 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
 import { UserService } from 'src/app/services/user.service';
 import { FindService } from 'src/app/services/find.service';
 import { Seller } from 'src/app/models/seller.model';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
 
 @Component({
@@ -43,12 +43,13 @@ export class HomeComponent implements OnInit {
   public sellerCompany: Seller[] = [];
   public idsAgente: string;
   public nameCiaReportSellers = environment.nameCiaReportSellers;
-  public status: Boolean;
+  public status = false;
 
 
   constructor(
     public usuarioService: UserService,
-    private buscaService: FindService
+    private buscaService: FindService,
+    private cdr: ChangeDetectorRef
     ) {
     setTimeout(() => {
       this.agruparSellers();
@@ -59,13 +60,12 @@ export class HomeComponent implements OnInit {
         this.rolAgente = sellerInfo['usuarios']['0'].role;
         this.idsAgente = sellerInfo['usuarios']['0'].id;
         this.status = true;
+        this.cdr.detectChanges();
         if (this.rolAgente === 'OPERACION_ROLE') {
           this.listarVendedores();
         }
-        // else {
-        //   this.sellerCompany = sellerInfo['usuarios'];
-        // }
-      });
+      },
+      (_err) => { this.status = true; this.cdr.detectChanges(); });
   }
 
   ngOnInit() { }

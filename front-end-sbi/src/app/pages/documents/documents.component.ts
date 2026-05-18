@@ -21,7 +21,8 @@ import {
   DialogRemoveFilesComponent
 } from '../booking/edit-booking.component';
 import {DocumentoService} from '../../services/documento.service';
-const moment = _moment;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const moment: any = (_moment as any).default ?? _moment;
 export const MY_FORMATS = {
   parse: {
     dateInput: 'LL',
