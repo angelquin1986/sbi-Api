@@ -47,21 +47,15 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     ESTADOS EN BASE DE DATOS                        │
+│              ESTADOS EN BASE DE DATOS (alcance: bloqueos)           │
 │                                                                     │
-│  Tipo 2    → LISTA DE ESPERA (Pending)  [tipo pedido WL, sin cabina] │
+│  Tipo 2    → LISTA DE ESPERA (Pending)  [tipo pedido WL, sin cabina]│
 │  Código 167→ ON HOLD principal          [cabina bloqueada]          │
 │  Código 177→ ON HOLD secundario         [cabinas afectadas]         │
-│  Código 185→ CONFIRMED principal        [venta confirmada]          │
-│  Código 274→ CONFIRMED secundario                                   │
 │  Código 168→ MANTENIMIENTO principal    [cabina cerrada]            │
 │  Código 303→ MANTENIMIENTO secundario                               │
-│  Código 1777→ CANCELLED, CONFIRMED principal                        │
-│  Código 1778→ CANCELLED, CONFIRMED secundario                       │
 │  Código 2583→ HOLD RELEASED principal   [liberado]                  │
 │  Código 2584→ HOLD RELEASED secundario                              │
-│  Código 2628→ CONFIRMED PENDIENTE       [confirmado sin completar]  │
-│  Código 2629→ CONFIRMED PENDIENTE secundario                        │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -330,30 +324,29 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
 ## 11. Máquina de estados completa
 
 ```
-                              ┌─────────┐
-                              │DISPONIBLE│
-                              └────┬────┘
-               ┌────────────────── │ ──────────────────────────┐
-               │ agencia solicita  │                   operador cierra
-               │ + hay espacios    │                   cabina (mant.)
-               ▼                   ▼                           ▼
-         ┌──────────┐       ┌────────────┐            ┌──────────────┐
-  ┌──────│ ON HOLD  │       │  PENDING   │            │ MAINTENANCE  │
-  │      │ (167/177)│       │  WL (2)    │            │ (168/303)    │
-  │      └────┬─────┘       └─────┬──────┘            └──────┬───────┘
-  │           │                   │                          │
-  │      expira                operador                  operador
-  │      o libera              asigna                    abre cabina
-  │           │                   │                          │
-  │           ▼                   ▼                          ▼
-  │    ┌─────────────┐      ┌──────────┐               DISPONIBLE
-  │    │HOLD RELEASED│      │ ON HOLD  │
-  │    │(2583/2584)  │      │(167/177) │
-  │    └──────┬──────┘      └──────────┘
-  │           │
-  │    cabinas → DISPONIBLE
-  │
-  └── (vencimiento automático también lleva a HOLD RELEASED)
+                              ┌───────────┐
+                              │ DISPONIBLE │
+                              └─────┬──────┘
+          ┌──────────────────────── │ ──────────────────────────┐
+          │ agencia solicita        │              operador cierra
+          │ + hay espacios          │              cabina operativa
+          ▼                         ▼                            ▼
+    ┌──────────┐             ┌────────────┐            ┌──────────────┐
+    │ ON HOLD  │             │  PENDING   │            │ MAINTENANCE  │
+    │ (167/177)│             │  WL (2)    │            │ (168/303)    │
+    └────┬─────┘             └─────┬──────┘            └──────┬───────┘
+         │                         │                          │
+    expira o libera           operador asigna             operador abre
+    (manual o auto)           cuando hay espacio           cabina
+         │                         │                          │
+         ▼                         ▼                          ▼
+  ┌─────────────┐            ┌──────────┐               DISPONIBLE
+  │HOLD RELEASED│            │ ON HOLD  │
+  │ (2583/2584) │            │ (167/177)│
+  └──────┬──────┘            └──────────┘
+         │
+         ▼
+    DISPONIBLE
 ```
 
 > **¿Cómo funciona el Mantenimiento?**
