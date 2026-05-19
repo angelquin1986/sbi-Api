@@ -1,15 +1,18 @@
 # Gestión de Bloqueos de Cabinas — Documento Funcional
 
-**Proyecto:** Galápagos Travel Center (GTC)
-**Proceso:** Gestión de disponibilidad y bloqueos de cabinas de cruceros
-**Versión:** 4.0 — Verificada contra código fuente Java (back-end) y JSF/PrimeFaces (front-end)
+**Aplicable a:** Operadores de cruceros (genérico)
+**Proceso:** Gestión de bloqueos y disponibilidad de cabinas
+**Alcance:** Exclusivamente bloqueos, lista de espera, liberación, mantenimiento y expiración. No incluye confirmación de venta ni cancelación de venta.
+**Versión:** 5.0 — Revisión funcional: alcance reducido a bloqueos
 **Audiencia:** Dueño del proceso / Operaciones
 
 ---
 
 ## 1. ¿De qué trata este proceso?
 
-El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en cruceros de Galápagos. El operador (Royal/GTC) administra esas solicitudes: confirma ventas, libera espacios, gestiona listas de espera y controla el mantenimiento de cabinas.
+El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en cruceros. El operador administra esas solicitudes: libera espacios, gestiona listas de espera, controla el mantenimiento de cabinas y monitorea el vencimiento automático de bloqueos.
+
+> **Nota:** Este documento cubre únicamente el ciclo de vida de bloqueos. Los flujos de confirmación de venta y cancelación de confirmación pertenecen a un documento separado.
 
 ---
 
@@ -17,7 +20,7 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
 
 | Actor        | Qué hace                                                              |
 |--------------|-----------------------------------------------------------------------|
-| **Agencia**  | Solicita bloqueos, entra en lista de espera, confirma o libera        |
+| **Agencia**  | Solicita bloqueos, entra en lista de espera, solicita extensiones, libera bloqueos |
 | **Operador** | Administra disponibilidad, aprueba, asigna listas de espera, mantiene |
 | **Sistema**  | Expira bloqueos automáticamente, notifica, recalcula disponibilidad   |
 
@@ -35,7 +38,7 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
 | **Grupo**             | Conjunto de pedidos de la misma agencia para el mismo itinerario (mismo código)    |
 | **Cuota**             | Límite de bloqueos que puede realizar un usuario por mes/año                       |
 | **Modo FIT**          | Reserva individual por pasajero                                                     |
-| **Modo Charter**      | Reserva del barco completo o grupo grande                                           |
+| **Modo Charter**      | Bloqueo del barco completo; requiere cubrir la capacidad total del barco             |
 | **WL**                | Waiting List — lista de espera cuando no hay disponibilidad directa                 |
 
 ---
@@ -46,7 +49,7 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
 ┌─────────────────────────────────────────────────────────────────────┐
 │                     ESTADOS EN BASE DE DATOS                        │
 │                                                                     │
-│  Código 2  → LISTA DE ESPERA (Pending)  [sin cabina asignada]       │
+│  Tipo 2    → LISTA DE ESPERA (Pending)  [tipo pedido WL, sin cabina] │
 │  Código 167→ ON HOLD principal          [cabina bloqueada]          │
 │  Código 177→ ON HOLD secundario         [cabinas afectadas]         │
 │  Código 185→ CONFIRMED principal        [venta confirmada]          │
@@ -185,92 +188,7 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
 
 ---
 
-## 7. Flujo 3 — Confirmación de venta
-
-**Cuándo aplica:** La agencia decide confirmar la compra estando en ON HOLD.
-
-```
-  AGENCIA                        SISTEMA                      OPERADOR
-     │                              │                              │
-     │                              │◄──── Confirmar pedidos ─────│
-     │                              │      del grupo               │
-     │                              │      + indicar boletos       │
-     │                              │                              │
-     │                        Cambia BloqueoEspacios:              │
-     │                        167 → 185 (principal)                │
-     │                        177 → 274 (secundario)               │
-     │                              │                              │
-     │                        Crea PedidoPasajero                  │
-     │                        por cada adulto y niño               │
-     │                              │                              │
-     │                        Crea Pasajero vacío                  │
-     │                        (se completará después)              │
-     │                              │                              │
-     │                        Calcula tarifas finales              │
-     │                        (stored procedure)                   │
-     │                              │                              │
-     │                        Registra fechaConfirmacion           │
-     │◄── Mail confirmación ────────│                              │
-```
-
-**Al confirmar, si el pasajero NO desea boleto aéreo:**
-```
-→ Se aplica cargo: $50 × número de pasajeros sin boleto
-  Descripción: "Penalty fee for the Galapagos air tickets not-issued"
-```
-
-**Opción de boletos del pasajero:**
-```
-  1679 = Desea boleto aéreo
-  1683 = No desea boleto aéreo
-         └─ Genera cargo extra de $50/pax
-```
-
-### 7.1 Asistente de confirmación (4 pasos)
-
-Después de iniciar la confirmación, el operador completa los datos en 4 pasos en pantalla:
-
-```
-┌──────────┐    ┌───────────────┐    ┌──────────────┐    ┌──────────┐
-│  Paso 1  │───►│    Paso 2     │───►│    Paso 3    │───►│  Paso 4  │
-│Pasajeros │    │  Servicios    │    │    Vuelos    │    │ Resumen  │
-│          │    │ Adicionales   │    │  (Boletos)   │    │ Final    │
-└──────────┘    └───────────────┘    └──────────────┘    └──────────┘
-```
-
-**Paso 1 — Datos de pasajeros:**
-- Nombre, apellido, género, estado civil
-- Fecha de nacimiento, nacionalidad
-- Número de pasaporte
-- Observaciones especiales
-- *Validaciones:* edad vs tipo de pasajero (adulto/niño), formato pasaporte
-- *Restricción:* edición bloqueada si ya se emitieron boletos o tras ventana de edición
-
-**Paso 2 — Servicios adicionales:**
-- Selección de servicios disponibles por pasajero
-- Fechas de servicio, tipo (sí/no/gratuito)
-- *Regla:* si se cambia nacionalidad o edad → servicios se eliminan automáticamente
-
-**Paso 3 — Boletos aéreos:**
-```
-  Opciones por pasajero:
-  ├─ Sin boleto              → cargo $50/pax
-  ├─ Fechas del crucero      → mismo itinerario
-  ├─ Fechas fuera del crucero→ fechas libres
-  ├─ Solo ida                → one-way
-  └─ Ida y vuelta            → roundtrip
-```
-- *Restricción:* edición bloqueada si boleto ya fue emitido
-- *Regla:* si se cambia nombre/pasaporte/edad → boletos se recalculan automáticamente
-
-**Paso 4 — Resumen final:**
-- Totales de alojamiento y extras
-- Visibilidad de cargos por cancelación
-- Acceso a voucher, proforma, factura
-
----
-
-## 8. Flujo 4 — Liberación de bloqueo (Hold Release)
+## 7. Flujo 3 — Liberación de bloqueo (Hold Release)
 
 **Cuándo aplica:** Se libera el espacio sin confirmar venta.
 
@@ -293,31 +211,9 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
 
 ---
 
-## 9. Flujo 5 — Cancelación de confirmación
+## 8. Cierre y apertura de cabina (Mantenimiento operativo)
 
-**Cuándo aplica:** Una venta confirmada debe cancelarse.
-
-```
-  OPERADOR                       SISTEMA
-     │                              │
-     │── Cancelar confirmación ─────►│
-     │                              │
-     │                        Cambia BloqueoEspacios:
-     │                        185 → 1777 (CANCELLED, CONFIRMED)
-     │                        274 → 1778 (CANCELLED, CONFIRMED sec.)
-     │                              │
-     │                        Inactiva PedidoPasajero
-     │                        Inactiva extras del pedido
-     │                        (excepto cargos de cancelación tipo 1780)
-     │                              │
-     │                        Registra fecha y usuario
-```
-
----
-
-## 10. Flujo 6 — Mantenimiento de cabina
-
-**Cuándo aplica:** El operador necesita bloquear una cabina por motivos operativos.
+**Cuándo aplica:** El operador necesita cerrar o abrir una cabina por motivos operativos (reparación, fuera de servicio, etc.). Funcionalmente se trata como un cierre/apertura; internamente el sistema lo persiste mediante un pedido de tipo mantenimiento.
 
 ```
   OPERADOR                       SISTEMA
@@ -342,13 +238,13 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
 
 ---
 
-## 11. Flujo 7 — Expiración automática
+## 9. Flujo 4 — Expiración automática
 
 **El sistema ejecuta este proceso cada 3 minutos:**
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  TIMER A — PedidoCaducadoTimer (cada 3 minutos)          │
+│  TIMER A — PedidoCaducadoTimer (intervalo configurable)   │
 │  Pedidos ON HOLD vencidos (sin WL en espera)             │
 │  ────────────────────────────────────────────            │
 │  1. SP: timer_buscar_pedidos_caducados_notificados        │
@@ -356,7 +252,7 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
 │     SP: timer_eliminar_pedido_caducado(pedido, false)     │
 │  3. Recalcula contadores + cabinas menores del itinerario │
 │                                                          │
-│  TIMER B — PedidoCaducadoWLTimer (cada 3 minutos)        │
+│  TIMER B — PedidoCaducadoWLTimer (intervalo configurable) │
 │  Pedidos ON HOLD vencidos con lista de espera activa     │
 │  ────────────────────────────────────────────────────    │
 │  1. SP: timer_buscar_pedidos_caducados_notificados_wl     │
@@ -379,7 +275,7 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
 
 ---
 
-## 12. Flujo 8 — Extensión de plazo
+## 10. Flujo 5 — Extensión de plazo
 
 ```
   AGENCIA                        OPERADOR                   SISTEMA
@@ -423,7 +319,7 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
 
 ---
 
-## 13. Máquina de estados completa
+## 11. Máquina de estados completa
 
 ```
                               ┌─────────┐
@@ -489,7 +385,7 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
 
 ---
 
-## 14. Reglas de negocio (verificadas en código fuente)
+## 12. Reglas de negocio (verificadas en código fuente)
 
 | #   | Regla                                                                                                          |
 |-----|----------------------------------------------------------------------------------------------------------------|
@@ -501,16 +397,12 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
 | R6  | Cuando se bloquea una cabina, se crean bloqueos **secundarios** en cabinas del mismo barco con fechas solapadas|
 | R7  | Lista de espera solo aplica si no hay disponibles pero sí hay ON HOLD. Sin ON HOLD → solicitud rechazada       |
 | R8  | El operador asigna manualmente desde la lista de espera. El sistema no asigna automáticamente                  |
-| R9  | Al confirmar, el sistema crea automáticamente un pasajero vacío por cada adulto y niño                         |
-| R10 | Pasajero sin boleto aéreo = cargo de **$50** por pasajero (*"Penalty fee for the Galapagos air tickets"*)      |
 | R11 | La extensión de plazo suma días×1440 + horas×60 minutos a la fecha actual de vencimiento                      |
 | R12 | Se registra número de extensiones (`nroExtensiones`) y fecha de la primera extensión                          |
-| R13 | El timer de expiración corre **cada 3 minutos**, son **2 timers separados**: uno para holds normales y otro para holds con lista de espera |
+| R13 | Existen **2 timers separados**: uno para holds vencidos normales y otro para holds vencidos con lista de espera activa. La frecuencia de ejecución es **configurable** (`INTERVAL_IN_MINUTES`) |
 | R14 | Un pedido puede incluir múltiples cabinas del mismo itinerario (forman un grupo)                               |
 | R15 | El código del grupo es el código del **primer pedido** creado; los siguientes lo heredan                       |
 | R16 | Al liberar, se registra en el pedido: `"[usuario] HD RELEASED"` con fecha                                     |
-| R17 | Si se modifica nacionalidad o edad de un pasajero, sus servicios adicionales se eliminan automáticamente       |
-| R18 | Si se modifica nombre, pasaporte o edad, se recalculan los boletos aéreos automáticamente                      |
 | R19 | La referencia del pedido (hold y WL) **no puede contener "/"** y tiene máximo **25 caracteres**                |
 | R20 | **Itinerario soloGrupo:** el primer bloqueo debe cubrir al menos el mínimo de espacios del grupo               |
 | R21 | **Itinerario soloCharter:** el bloqueo debe cubrir la capacidad completa del barco                             |
@@ -520,7 +412,7 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
 
 ---
 
-## 15. Notificaciones del sistema
+## 13. Notificaciones del sistema
 
 | Evento                          | Destinatarios           | Qué se envía                                       |
 |---------------------------------|-------------------------|----------------------------------------------------|
@@ -529,14 +421,13 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
 | WL eliminada manualmente        | Agencia                 | Notificación de baja de lista de espera            |
 | Vencimiento próximo (1ra vez)   | Agencia                 | Recordatorio: pedido próximo a vencer              |
 | Vencimiento próximo (2da vez)   | Agencia                 | Último aviso de vencimiento                        |
-| Confirmación de venta           | Agencia + Operador      | Detalle de la confirmación con cabinas             |
 | Liberación / Cancelación manual | Agencia                 | Notificación de cancelación                        |
 | Cancelación automática (timer)  | Agencia                 | Notificación separada de expiración automática     |
 | Extensión aprobada              | Agencia                 | Confirmación de nueva fecha de vencimiento         |
 
 ---
 
-## 16. Funciones adicionales del operador
+## 14. Funciones del operador
 
 | Función                        | Descripción                                                                    |
 |--------------------------------|--------------------------------------------------------------------------------|
@@ -554,7 +445,7 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
 
 ---
 
-## 17. Lo que el sistema calcula automáticamente
+## 15. Lo que el sistema calcula automáticamente
 
 - Contadores del itinerario en tiempo real: `bloqueados`, `confirmados`, `listaEspera`, `disponibles`
 - Estado actualizado de cada cabina (color visual por estado)
@@ -564,7 +455,7 @@ Después de iniciar la confirmación, el operador completa los datos en 4 pasos 
 
 ---
 
-## 18. Control de acceso por rol
+## 16. Control de acceso por rol
 
 El sistema controla qué acciones puede realizar cada tipo de usuario mediante permisos configurables:
 
@@ -582,21 +473,18 @@ El sistema controla qué acciones puede realizar cada tipo de usuario mediante p
 
 ---
 
-## 19. Documentos generados
+## 17. Documentos generados
 
 El sistema genera documentos de soporte para cada reserva confirmada:
 
 | Documento      | Cuándo se genera                    | Para quién   |
 |----------------|-------------------------------------|--------------|
-| **Voucher**    | Al confirmar el bloqueo/reserva     | Agencia      |
-| **Proforma**   | Al confirmar, antes de pago final   | Agencia      |
-| **Factura**    | Al completar el proceso de pago     | Agencia      |
 | **Manifiesto** | Exportación por itinerario          | Operaciones  |
 | **Reporte XLS**| Bajo demanda desde pantalla Actividad| Supervisión |
 
 ---
 
-## 20. Diferencias FIT vs Charter
+## 18. Diferencias FIT vs Charter
 
 | Aspecto                     | Modo FIT                              | Modo Charter                              |
 |-----------------------------|---------------------------------------|-------------------------------------------|
@@ -608,7 +496,7 @@ El sistema genera documentos de soporte para cada reserva confirmada:
 
 ---
 
-## 21. Sesión y seguridad
+## 19. Sesión y seguridad
 
 - **Tiempo de sesión:** 120 minutos de inactividad → cierre automático
 - **Idioma:** interfaz disponible en español e inglés
@@ -617,7 +505,7 @@ El sistema genera documentos de soporte para cada reserva confirmada:
 
 ---
 
-## 22. Ejemplos prácticos por caso de uso
+## 20. Ejemplos prácticos por caso de uso
 
 > Casos reales, cortos y didácticos para entender el comportamiento del sistema.
 
@@ -733,47 +621,7 @@ Resultado:
 
 ---
 
-### ✅ Caso 6 — Confirmación de venta
-
-**Situación:** "Natura" (ahora en ON HOLD) confirma la compra.
-
-```
-Pedido:     ON HOLD, 2 adultos
-Operador:   indica que ambos desean boleto aéreo
-
-Sistema:
-   - BloqueoEspacios: 167 → 185 (CONFIRMED)
-   - Secundarios: 177 → 274
-   - Crea 2 PedidoPasajero vacíos (se completan después)
-   - Calcula tarifas finales
-   - Registra fechaConfirmacion
-
-Resultado:
-   - Pedido en estado CONFIRMED ✅
-   - Mail de confirmación enviado
-```
-
----
-
-### ✅ Caso 7 — Confirmación con penalidad por sin boleto
-
-**Situación:** Al confirmar, 1 de los 2 pasajeros no quiere boleto aéreo.
-
-```
-Pasajero 1: desea boleto    → sin cargo extra
-Pasajero 2: NO desea boleto → cargo $50
-
-Sistema agrega:
-   Extra: "Penalty fee for the Galapagos air tickets not-issued"
-   Monto: $50 × 1 pasajero = $50
-
-Resultado:
-   - Pedido confirmado ✅ con cargo adicional de $50
-```
-
----
-
-### 🔓 Caso 8 — Liberación de bloqueo (Hold Release)
+### 🔓 Caso 6 — Liberación de bloqueo (Hold Release)
 
 **Situación:** "Galápagos Tours" decide no confirmar y libera el bloqueo antes de que venza.
 
@@ -794,29 +642,7 @@ Resultado:
 
 ---
 
-### ❌ Caso 9 — Cancelación de venta confirmada
-
-**Situación:** La agencia ya confirmó pero debe cancelar (pasajeros no viajan).
-
-```
-Pedido:     CONFIRMED (185)
-Acción:     Operador cancela
-
-Sistema:
-   - BloqueoEspacios: 185 → 1777 (CANCELLED, CONFIRMED)
-   - Secundarios: 274 → 1778
-   - Inactiva PedidoPasajero de todos los pasajeros
-   - Inactiva extras (excepto cargos tipo 1780 por cancelación)
-   - Registra fecha y usuario que canceló
-
-Resultado:
-   - Pedido en estado CANCELLED, CONFIRMED ✅
-   - La cabina puede reasignarse
-```
-
----
-
-### 🔧 Caso 10 — Mantenimiento de cabina
+### 🔧 Caso 7 — Cierre de cabina por mantenimiento
 
 **Situación:** El operador necesita cerrar la cabina Suite del barco por reparación.
 
@@ -841,7 +667,7 @@ Cuando se repara:
 
 ---
 
-### ⏳ Caso 11 — Vencimiento automático
+### ⏳ Caso 8 — Vencimiento automático
 
 **Situación:** "Galápagos Tours" no libera ni confirma. El plazo vence.
 
@@ -862,7 +688,7 @@ Resultado:
 
 ---
 
-### 📅 Caso 12 — Extensión aprobada
+### 📅 Caso 9 — Extensión aprobada
 
 **Situación:** "Galápagos Tours" necesita 2 días más para confirmar.
 
@@ -883,7 +709,7 @@ Resultado:
 
 ---
 
-### 🚫 Caso 13 — Extensión rechazada
+### 🚫 Caso 10 — Extensión rechazada
 
 **Situación:** El operador no aprueba la extensión porque hay WL esperando.
 
@@ -902,7 +728,7 @@ Resultado:
 
 ---
 
-### 🔄 Caso 14 — Reasignación de cabina
+### 🔄 Caso 11 — Reasignación de cabina
 
 **Situación:** Una familia de 4 confirmada en dos cabinas dobles quiere moverse a una suite cuádruple.
 
@@ -927,7 +753,7 @@ Resultado:
 
 ---
 
-### 🚢 Caso 15 — Charter (barco completo)
+### 🚢 Caso 12 — Charter (barco completo)
 
 **Situación:** Una empresa quiere reservar el barco completo (15 pax).
 
