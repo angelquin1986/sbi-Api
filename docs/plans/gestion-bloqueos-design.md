@@ -65,23 +65,31 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    LO QUE VE EL USUARIO EN PANTALLA                 │
+│          LO QUE VE EL USUARIO (estados relevantes a bloqueos)       │
 │                                                                     │
-│  On Hold             → Cabina bloqueada para la agencia             │
-│  Pending             → En lista de espera                           │
-│  In Process          → Bloqueo en proceso de confirmación           │
-│  Time Limit          → Bloqueo próximo a vencer                     │
-│  Confirmed           → Venta confirmada                             │
-│  Confirmed Pending   → Confirmado pero sin completar datos          │
-│  Cancel Confirmation → Confirmación cancelada (aún sin liberar)     │
-│  Expired / Caducado  → Liberado automáticamente por vencimiento     │
-│  Grouped / Agrupado  → Pedidos del mismo grupo                      │
-│  Cancelled           → Cancelado (varias combinaciones internas)    │
+│  On Hold       → Cabina bloqueada para la agencia                   │
+│  Pending       → En lista de espera                                 │
+│  Time Limit    → Bloqueo próximo a vencer                           │
+│  Hold Released → Bloqueo liberado (manual o automático)             │
 └─────────────────────────────────────────────────────────────────────┘
+
+  Nota: "Expired/Caducado" y "Hold Released" son el mismo resultado final
+  visto desde dos caminos distintos:
+  - Hold Released manual  = agencia o operador libera explícitamente
+  - Hold Released auto    = el timer lo libera al vencer el plazo
+  En ambos casos la cabina queda DISPONIBLE nuevamente.
 ```
 
-> **Nota:** Cada estado tiene una variante **principal** (para la cabina directamente bloqueada)
-> y una **secundaria** (para cabinas del mismo barco afectadas por solape de fechas).
+> **¿Qué es el estado secundario?**
+> Cuando se bloquea una cabina (estado **principal** 167), el sistema identifica
+> automáticamente otras cabinas del mismo barco cuyos itinerarios se solapan en
+> fechas con el bloqueo actual, y las marca con estado **secundario** (177).
+> Esto evita que esas cabinas puedan venderse para fechas que ya están comprometidas.
+>
+> Ejemplo: si bloqueas la cabina 5 del barco "Evolution" para el viaje 10–17 jun,
+> el sistema también bloquea automáticamente la cabina 5 del viaje 14–21 jun
+> (porque se solapan 3 días). Ese segundo bloqueo es el "secundario".
+> Cuando el bloqueo principal se libera, los secundarios también se liberan.
 
 ---
 
@@ -240,38 +248,38 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
 
 ## 9. Flujo 4 — Expiración automática
 
-**El sistema ejecuta este proceso cada 3 minutos:**
+> **En simple:** El sistema tiene un proceso automático que revisa periódicamente si algún bloqueo venció. Si venció, lo libera solo, sin que nadie tenga que hacer nada. Existen dos variantes de este proceso: uno para bloqueos sin lista de espera, y otro para bloqueos que tienen agencias esperando en lista de espera (para notificar correctamente en cada caso).
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│  TIMER A — PedidoCaducadoTimer (intervalo configurable)   │
-│  Pedidos ON HOLD vencidos (sin WL en espera)             │
-│  ────────────────────────────────────────────            │
-│  1. SP: timer_buscar_pedidos_caducados_notificados        │
-│  2. Por cada pedido vencido:                              │
-│     SP: timer_eliminar_pedido_caducado(pedido, false)     │
-│  3. Recalcula contadores + cabinas menores del itinerario │
-│                                                          │
-│  TIMER B — PedidoCaducadoWLTimer (intervalo configurable) │
-│  Pedidos ON HOLD vencidos con lista de espera activa     │
-│  ────────────────────────────────────────────────────    │
-│  1. SP: timer_buscar_pedidos_caducados_notificados_wl     │
-│  2. Por cada pedido:                                      │
-│     SP: timer_eliminar_pedido_caducado(pedido, true)      │
-│  3. Recalcula contadores + cabinas menores del itinerario │
-│                                                          │
-│  Tarea C: Pedidos WL vencidos (Timer A o B)              │
-│  ───────────────────────────                             │
-│  1. SP: timer_eliminar_pedidos_pendientes                 │
-│  2. Recalcula contadores del itinerario                   │
-│                                                          │
-│  Tarea D: Color de cabinas (cada 5 min)                  │
-│  ──────────────────────────────────────                  │
-│  1. SP: timer_buscar_pedidos_eliminados                   │
-│  2. SP: timer_actualizar_color_cabina(pedido)             │
-│  3. Recalcula contadores                                  │
-└──────────────────────────────────────────────────────────┘
+  CASO A — Bloqueo vence sin nadie en lista de espera
+  ─────────────────────────────────────────────────────
+  Timer detecta pedido ON HOLD con fechaCaduca vencida
+       │
+       ▼
+  Libera bloqueo → cabina vuelve a DISPONIBLE
+  Recalcula contadores del itinerario
+  Envía mail de cancelación automática a la agencia
+
+  CASO B — Bloqueo vence y había una WL esperando
+  ─────────────────────────────────────────────────
+  Timer detecta pedido ON HOLD con fechaCaduca vencida
+  + existe lista de espera activa en ese itinerario
+       │
+       ▼
+  Libera bloqueo → cabina vuelve a DISPONIBLE
+  Notifica al operador que hay WL disponible para asignar
+  Recalcula contadores del itinerario
+
+  CASO C — WL propia vence
+  ─────────────────────────
+  Timer detecta pedido WL con fechaCaduca vencida
+       │
+       ▼
+  Elimina la WL
+  Recalcula contadores del itinerario
 ```
+
+> **Nota técnica:** Existen 2 timers separados en el sistema (`PedidoCaducadoTimer` y `PedidoCaducadoWLTimer`). La frecuencia de ejecución es **configurable** en el parámetro `INTERVAL_IN_MINUTES` del sistema.
 
 ---
 
@@ -325,63 +333,34 @@ El sistema permite que las agencias de viaje bloqueen temporalmente cabinas en c
                               ┌─────────┐
                               │DISPONIBLE│
                               └────┬────┘
-                                   │ agencia solicita + hay espacios
-                                   ▼
-                             ┌──────────┐
-              ┌──────────────│ ON HOLD  │──────────────┐
-              │              │ (167/177)│              │
-              │              └────┬─────┘              │
-              │                   │                    │
-         expira/libera        confirma             mantenimiento
-              │                   │                    │
-              ▼                   ▼                    ▼
-       ┌─────────────┐    ┌────────────┐      ┌──────────────┐
-       │HOLD RELEASED│    │ CONFIRMED  │      │ MAINTENANCE  │
-       │(2583/2584)  │    │(185/274)   │      │ (168/303)    │
-       └──────┬──────┘    └─────┬──────┘      └──────┬───────┘
-              │                 │                    │
-       cabinas                  │                 se abre
-       → DISPONIBLE     ┌───────┴───────┐            │
-                        │               │            ▼
-                   cancela         libera holds  DISPONIBLE
-                   cabinas         confirmadas
-                        │               │
-                        ▼               ▼
-              ┌──────────────┐  ┌─────────────────────┐
-              │  CANCELLED,  │  │   CONFIRMED,        │
-              │  CONFIRMED   │  │   HOLD RELEASED     │
-              │  (1777/1778) │  │   (2583/2584)       │
-              └──────┬───────┘  └─────────────────────┘
-                     │
-               libera holds
-                     │
-                     ▼
-       ┌───────────────────────────┐
-       │ CANCELLED, CONFIRMED,     │
-       │ HOLD RELEASED             │
-       │ (1777+2583)               │
-       └───────────────────────────┘
-
-
-  Flujo paralelo — Lista de espera:
-
-  No hay DISPONIBLE + hay ON HOLD:
-       agencia solicita
-              │
-              ▼
-       ┌────────────┐
-       │  PENDING   │   estadoPedido = 2
-       │ (WL activo)│   con fecha de vencimiento
-       └─────┬──────┘
-             │
-    operador asigna manualmente
-    cuando se libera un ON HOLD
-             │
-             ▼
-       ┌──────────┐
-       │ ON HOLD  │  → flujo normal arriba
-       └──────────┘
+               ┌────────────────── │ ──────────────────────────┐
+               │ agencia solicita  │                   operador cierra
+               │ + hay espacios    │                   cabina (mant.)
+               ▼                   ▼                           ▼
+         ┌──────────┐       ┌────────────┐            ┌──────────────┐
+  ┌──────│ ON HOLD  │       │  PENDING   │            │ MAINTENANCE  │
+  │      │ (167/177)│       │  WL (2)    │            │ (168/303)    │
+  │      └────┬─────┘       └─────┬──────┘            └──────┬───────┘
+  │           │                   │                          │
+  │      expira                operador                  operador
+  │      o libera              asigna                    abre cabina
+  │           │                   │                          │
+  │           ▼                   ▼                          ▼
+  │    ┌─────────────┐      ┌──────────┐               DISPONIBLE
+  │    │HOLD RELEASED│      │ ON HOLD  │
+  │    │(2583/2584)  │      │(167/177) │
+  │    └──────┬──────┘      └──────────┘
+  │           │
+  │    cabinas → DISPONIBLE
+  │
+  └── (vencimiento automático también lleva a HOLD RELEASED)
 ```
+
+> **¿Cómo funciona el Mantenimiento?**
+> El operador puede cerrar una cabina **directamente desde el estado DISPONIBLE**,
+> sin necesidad de que exista un bloqueo previo. Es una acción operativa
+> (reparación, barco en dique, ajuste de capacidad) que impide que la cabina
+> aparezca disponible para las agencias. Al abrir la cabina, vuelve a DISPONIBLE.
 
 ---
 
